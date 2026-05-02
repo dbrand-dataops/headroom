@@ -4,24 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Headroom — a personal psychological load management tool built on the stress-bucket model. Know your headroom.">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#0f172a">
   <title>Headroom — know your headroom</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
       --teal: #4fd1c5;
       --teal-deep: #2c7a7b;
+      --teal-dim: rgba(79, 209, 197, 0.15);
       --amber: #f6ad55;
+      --amber-deep: #c77c2a;
+      --amber-dim: rgba(246, 173, 85, 0.15);
       --coral: #fc8181;
+      --coral-deep: #c53030;
+      --coral-dim: rgba(252, 129, 129, 0.15);
       --bg: #0f172a;
       --bg-card: #1e293b;
+      --bg-elevated: #273548;
       --text: #e2e8f0;
       --text-muted: #94a3b8;
       --text-bright: #f8fafc;
+      --border: rgba(79, 209, 197, 0.08);
+      --border-hover: rgba(79, 209, 197, 0.25);
       --font-display: 'Fraunces', Georgia, serif;
       --font-body: 'DM Sans', system-ui, sans-serif;
     }
@@ -37,471 +45,817 @@
       overflow-x: hidden;
     }
 
-    /* ── NAV ── */
+    #root { min-height: 100vh; }
+
+    /* ─── NAV ─── */
     nav {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 100;
+      position: fixed; top: 0; width: 100%; z-index: 100;
       padding: 1.25rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(79, 209, 197, 0.08);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
     }
-
     .logo {
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: var(--teal);
-      letter-spacing: -0.02em;
-    }
-
-    .nav-links { display: flex; gap: 2rem; list-style: none; }
-
-    .nav-links a {
-      color: var(--text-muted);
+      font-family: var(--font-display); font-size: 1.35rem; font-weight: 600;
+      color: var(--teal); letter-spacing: -0.02em; cursor: pointer;
       text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: color 0.2s;
     }
-
-    .nav-links a:hover { color: var(--teal); }
-
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6rem 2rem 4rem;
-      position: relative;
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; transition: color 0.2s; cursor: pointer;
     }
+    .nav-links a:hover, .nav-links a.active { color: var(--teal); }
 
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      right: -10%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(79, 209, 197, 0.06) 0%, transparent 70%);
-      pointer-events: none;
+    /* ─── SHARED ─── */
+    .page { padding-top: 80px; min-height: 100vh; }
+    .page-section { padding: 5rem 2rem; }
+    .page-section + .page-section { border-top: 1px solid var(--border); }
+    .section-inner { max-width: 900px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.8rem; font-weight: 500; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--teal); margin-bottom: 1rem;
     }
-
-    .hero-inner {
-      max-width: 1100px;
-      width: 100%;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
+    .section-inner h2 {
+      font-family: var(--font-display); font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 600; color: var(--text-bright); line-height: 1.25;
+      letter-spacing: -0.02em; margin-bottom: 1.5rem;
     }
-
-    .hero-text h1 {
-      font-family: var(--font-display);
-      font-size: clamp(2.5rem, 5vw, 3.8rem);
-      font-weight: 600;
-      color: var(--text-bright);
-      line-height: 1.15;
-      letter-spacing: -0.03em;
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-text .strapline {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 300;
-      font-size: 1.35rem;
-      color: var(--teal);
-      margin-bottom: 2rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.3s forwards;
-    }
-
-    .hero-text p {
-      font-size: 1.1rem;
-      color: var(--text-muted);
-      max-width: 480px;
-      margin-bottom: 2.5rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.5s forwards;
-    }
+    .section-inner p { color: var(--text-muted); font-size: 1.05rem; max-width: 640px; margin-bottom: 1.25rem; }
 
     .btn-primary {
-      display: inline-block;
-      padding: 0.9rem 2.2rem;
-      background: var(--teal-deep);
-      color: var(--text-bright);
-      text-decoration: none;
-      font-family: var(--font-body);
-      font-weight: 500;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid var(--teal);
-      transition: all 0.25s;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.7s forwards;
+      display: inline-block; padding: 0.9rem 2.2rem;
+      background: var(--teal-deep); color: var(--text-bright);
+      text-decoration: none; font-family: var(--font-body);
+      font-weight: 500; font-size: 1rem; border-radius: 6px;
+      border: 1px solid var(--teal); transition: all 0.25s; cursor: pointer;
     }
+    .btn-primary:hover { background: var(--teal); color: var(--bg); }
 
-    .btn-primary:hover {
-      background: var(--teal);
-      color: var(--bg);
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 6rem 2rem 4rem; position: relative;
     }
-
+    .hero::before {
+      content: ''; position: absolute; top: -20%; right: -10%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(79,209,197,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1100px; width: 100%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+    }
+    .hero-text h1 {
+      font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-weight: 600; color: var(--text-bright); line-height: 1.15;
+      letter-spacing: -0.03em; margin-bottom: 0.5rem;
+    }
+    .hero-text .strapline {
+      font-family: var(--font-display); font-style: italic; font-weight: 300;
+      font-size: 1.35rem; color: var(--teal); margin-bottom: 2rem;
+      opacity: 0; animation: fadeUp 0.8s ease 0.3s forwards;
+    }
+    .hero-text p {
+      font-size: 1.1rem; color: var(--text-muted); max-width: 480px;
+      margin-bottom: 2.5rem; opacity: 0; animation: fadeUp 0.8s ease 0.5s forwards;
+    }
+    .hero .btn-primary { opacity: 0; animation: fadeUp 0.8s ease 0.7s forwards; }
     .hero-bucket {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      animation: fadeIn 1.2s ease 0.4s forwards;
+      display: flex; justify-content: center; align-items: center;
+      opacity: 0; animation: fadeIn 1.2s ease 0.4s forwards;
     }
 
-    /* ── BUCKET SVG ── */
-    .bucket-container {
-      filter: drop-shadow(0 0 40px rgba(79, 209, 197, 0.15));
-    }
-
-    .bucket-body {
-      fill: none;
-      stroke: var(--teal);
-      stroke-width: 2.5;
-      stroke-linejoin: round;
-    }
-
-    .bucket-fill {
-      transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .bucket-rim {
-      fill: none;
-      stroke: var(--teal);
-      stroke-width: 3;
-      stroke-linecap: round;
-    }
-
-    .bucket-midline {
-      stroke: rgba(79, 209, 197, 0.2);
-      stroke-width: 1;
-      stroke-dasharray: 6 4;
-    }
-
-    /* ── SECTIONS ── */
-    section {
-      padding: 6rem 2rem;
-    }
-
-    .section-inner {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .section-label {
-      font-family: var(--font-body);
-      font-size: 0.8rem;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--teal);
-      margin-bottom: 1rem;
-    }
-
-    .section-inner h2 {
-      font-family: var(--font-display);
-      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
-      font-weight: 600;
-      color: var(--text-bright);
-      line-height: 1.25;
-      letter-spacing: -0.02em;
-      margin-bottom: 1.5rem;
-    }
-
-    .section-inner p {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      max-width: 640px;
-      margin-bottom: 1.25rem;
-    }
-
-    /* ── CONCEPT CARDS ── */
-    .concept-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-
+    /* ─── CONCEPT CARDS ─── */
+    .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
     .concept-card {
-      background: var(--bg-card);
-      border: 1px solid rgba(79, 209, 197, 0.1);
-      border-radius: 10px;
-      padding: 2rem 1.5rem;
-      transition: border-color 0.3s, transform 0.3s;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 2rem 1.5rem; transition: border-color 0.3s, transform 0.3s;
     }
-
-    .concept-card:hover {
-      border-color: rgba(79, 209, 197, 0.25);
-      transform: translateY(-2px);
-    }
-
+    .concept-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
     .card-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.25rem;
-      font-size: 1.3rem;
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.25rem; font-size: 1.3rem;
     }
-
-    .card-icon.teal { background: rgba(79, 209, 197, 0.12); }
-    .card-icon.amber { background: rgba(246, 173, 85, 0.12); }
-    .card-icon.coral { background: rgba(252, 129, 129, 0.12); }
-
+    .card-icon.teal { background: var(--teal-dim); }
+    .card-icon.amber { background: var(--amber-dim); }
+    .card-icon.coral { background: var(--coral-dim); }
     .concept-card h3 {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 1.15rem;
-      color: var(--text-bright);
-      margin-bottom: 0.6rem;
+      font-family: var(--font-display); font-weight: 600; font-size: 1.15rem;
+      color: var(--text-bright); margin-bottom: 0.6rem;
     }
+    .concept-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
 
-    .concept-card p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* ── ORIGIN ── */
-    .origin-section {
-      border-top: 1px solid rgba(79, 209, 197, 0.08);
-    }
-
+    /* ─── ORIGIN ─── */
     .origin-quote {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-weight: 300;
-      font-size: 1.3rem;
-      color: var(--text);
-      border-left: 3px solid var(--teal);
-      padding-left: 1.5rem;
-      margin: 2rem 0;
-      max-width: 580px;
+      font-family: var(--font-display); font-style: italic; font-weight: 300;
+      font-size: 1.3rem; color: var(--text); border-left: 3px solid var(--teal);
+      padding-left: 1.5rem; margin: 2rem 0; max-width: 580px;
     }
 
-    /* ── CTA ── */
-    .cta-section {
-      text-align: center;
-      border-top: 1px solid rgba(79, 209, 197, 0.08);
-    }
+    /* ─── CTA ─── */
+    .cta-section { text-align: center; }
+    .cta-section .section-inner { display: flex; flex-direction: column; align-items: center; }
+    .cta-section p { text-align: center; }
 
-    .cta-section .section-inner {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .cta-section p {
-      text-align: center;
-    }
-
-    /* ── FOOTER ── */
+    /* ─── FOOTER ─── */
     footer {
-      padding: 2.5rem 2rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      border-top: 1px solid rgba(79, 209, 197, 0.06);
+      padding: 2.5rem 2rem; text-align: center; color: var(--text-muted);
+      font-size: 0.85rem; border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--teal); text-decoration: none; cursor: pointer; }
+
+    /* ═══════════════════════════════════════════════
+       DEMO PAGE
+       ═══════════════════════════════════════════════ */
+
+    .demo-page { padding-top: 80px; min-height: 100vh; }
+
+    .demo-layout {
+      max-width: 1100px; margin: 0 auto; padding: 2rem;
+      display: grid; grid-template-columns: 300px 1fr;
+      gap: 2.5rem; align-items: start;
     }
 
-    footer a {
-      color: var(--teal);
-      text-decoration: none;
+    .bucket-panel {
+      position: sticky; top: 100px;
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
     }
 
-    /* ── ANIMATIONS ── */
+    .bucket-svg-wrap { transition: filter 0.5s; }
+
+    .level-reading {
+      font-family: var(--font-display); font-size: 2.8rem; font-weight: 600;
+      letter-spacing: -0.03em; transition: color 0.5s;
+    }
+    .level-label {
+      font-size: 0.85rem; color: var(--text-muted); margin-top: -0.5rem;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .headroom-reading {
+      font-family: var(--font-display); font-style: italic; font-weight: 300;
+      font-size: 1.1rem; color: var(--text-muted);
+    }
+    .reset-btn {
+      background: none; border: 1px solid rgba(148,163,184,0.2);
+      color: var(--text-muted); font-family: var(--font-body);
+      font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 4px;
+      cursor: pointer; transition: all 0.2s; margin-top: 0.25rem;
+    }
+    .reset-btn:hover { border-color: var(--coral); color: var(--coral); }
+
+    .items-panel { display: flex; flex-direction: column; gap: 2rem; }
+
+    .item-group h3 {
+      font-family: var(--font-display); font-weight: 600; font-size: 1.05rem;
+      margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .item-group h3 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .item-group.fillers h3 { color: var(--coral); }
+    .item-group.fillers .dot { background: var(--coral); }
+    .item-group.emptiers h3 { color: var(--teal); }
+    .item-group.emptiers .dot { background: var(--teal); }
+
+    .items-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+    .item-btn {
+      padding: 0.6rem 1.1rem; border-radius: 6px;
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; border: 1px solid;
+      user-select: none;
+    }
+    .item-btn.filler {
+      background: var(--coral-dim); border-color: rgba(252,129,129,0.2); color: var(--coral);
+    }
+    .item-btn.filler:hover {
+      background: rgba(252,129,129,0.25); border-color: var(--coral); transform: translateY(-1px);
+    }
+    .item-btn.emptier {
+      background: var(--teal-dim); border-color: rgba(79,209,197,0.2); color: var(--teal);
+    }
+    .item-btn.emptier:hover {
+      background: rgba(79,209,197,0.25); border-color: var(--teal); transform: translateY(-1px);
+    }
+    .item-btn:active { transform: scale(0.96); }
+    .item-btn .impact { font-size: 0.75rem; opacity: 0.6; margin-left: 0.3rem; }
+    .item-btn.tapped { animation: tapPulse 0.3s ease; }
+    @keyframes tapPulse {
+      0% { transform: scale(1); }  50% { transform: scale(0.93); }  100% { transform: scale(1); }
+    }
+
+    .history-section { margin-top: 0.5rem; }
+    .history-section h3 {
+      font-family: var(--font-display); font-weight: 600; font-size: 1.05rem;
+      color: var(--text-bright); margin-bottom: 1rem;
+    }
+    .history-chart-wrap {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .history-log {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      max-height: 300px; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: var(--bg-elevated) var(--bg-card);
+    }
+    .log-entry {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0.75rem; border-radius: 6px;
+      font-size: 0.88rem; background: var(--bg-card); border: 1px solid var(--border);
+    }
+    .log-entry .time {
+      color: var(--text-muted); font-size: 0.8rem; min-width: 44px;
+      font-variant-numeric: tabular-nums;
+    }
+    .log-entry .label { flex: 1; color: var(--text); }
+    .log-entry .delta {
+      font-weight: 600; font-size: 0.85rem; font-variant-numeric: tabular-nums;
+      min-width: 40px; text-align: right;
+    }
+    .log-entry .delta.up { color: var(--coral); }
+    .log-entry .delta.down { color: var(--teal); }
+    .log-entry .level-after {
+      color: var(--text-muted); font-size: 0.8rem; min-width: 32px; text-align: right;
+    }
+
+    .demo-banner {
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);
+    }
+    .demo-banner strong { color: var(--amber); font-weight: 500; }
+
+    /* ─── PLACEHOLDER ─── */
+    .placeholder-page {
+      padding-top: 80px; min-height: 80vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .placeholder-inner { text-align: center; max-width: 500px; }
+    .placeholder-inner h1 {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+      color: var(--text-bright); margin-bottom: 1rem;
+    }
+    .placeholder-inner p { color: var(--text-muted); font-size: 1.05rem; }
+
+    /* ─── ANIMATIONS ─── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      .demo-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .bucket-panel {
+        position: relative; top: 0;
+        flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 1rem;
+      }
+      .bucket-panel svg { width: 160px; height: auto; }
+      .bucket-meta {
+        display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+      }
+      .level-reading { font-size: 2.2rem; }
     }
 
-    @keyframes fillBucket {
-      0% { transform: scaleY(0); }
-      100% { transform: scaleY(1); }
-    }
-
-    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       nav { padding: 1rem 1.25rem; }
       .nav-links { gap: 1.25rem; }
       .nav-links a { font-size: 0.85rem; }
-
       .hero { padding: 5rem 1.5rem 3rem; }
-      .hero-inner {
-        grid-template-columns: 1fr;
-        gap: 3rem;
-        text-align: center;
-      }
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
       .hero-text p { max-width: 100%; }
       .hero-bucket { order: -1; }
       .hero-bucket svg { width: 180px; }
-
-      .concept-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      section { padding: 4rem 1.5rem; }
+      .concept-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .page-section { padding: 4rem 1.5rem; }
+      .demo-layout { padding: 1.5rem; }
     }
 
     @media (max-width: 480px) {
       .nav-links { gap: 0.8rem; }
       .hero-bucket svg { width: 150px; }
+      .bucket-panel svg { width: 140px; }
     }
   </style>
 </head>
 <body>
+  <div id="root"></div>
 
-  <!-- NAV -->
-  <nav>
-    <div class="logo">headroom</div>
-    <ul class="nav-links">
-      <li><a href="#concept">Concept</a></li>
-      <li><a href="#origin">Origin</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-text">
-        <h1>Headroom</h1>
-        <div class="strapline">know your headroom</div>
-        <p>A personal psychological load management tool built on the stress-bucket model. See your current state. Understand your capacity. Make better decisions about the day ahead.</p>
-        <a href="#concept" class="btn-primary">Learn more</a>
-      </div>
-      <div class="hero-bucket">
-        <div class="bucket-container">
-          <!--
-            Bucket SVG — trapezoid with area-correct fill.
-            Showing ~30% fill (calm/teal) to illustrate the concept.
-            Full formula: fillH = (-98 + sqrt(9604 + 11712*L)) / 0.32
-            At L=0.30: fillH ≈ 50.6, wY = 188 - 50.6 ≈ 137.4
-          -->
-          <svg viewBox="0 0 200 220" width="260" height="286" xmlns="http://www.w3.org/2000/svg">
-            <!-- Midline at 50% -->
-            <line class="bucket-midline" x1="52" y1="120" x2="148" y2="120" />
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
-            <!-- Fill — clipped to bucket interior -->
+    // ═══════════════════════════════════════════
+    // BUCKET MODEL
+    // ═══════════════════════════════════════════
+
+    function bucketFillY(level) {
+      const L = Math.max(0, Math.min(100, level)) / 100;
+      if (L <= 0) return 188;
+      const fillH = (-98 + Math.sqrt(9604 + 11712 * L)) / 0.32;
+      return 188 - Math.min(fillH, 140);
+    }
+
+    function levelColor(level) {
+      if (level <= 40) return { main: '#4fd1c5', glow: 'rgba(79,209,197,0.15)' };
+      if (level <= 70) return { main: '#f6ad55', glow: 'rgba(246,173,85,0.15)' };
+      return { main: '#fc8181', glow: 'rgba(252,129,129,0.15)' };
+    }
+
+    function levelWord(level) {
+      if (level <= 20) return 'calm';
+      if (level <= 40) return 'settled';
+      if (level <= 55) return 'building';
+      if (level <= 70) return 'elevated';
+      if (level <= 85) return 'high';
+      return 'critical';
+    }
+
+    // ═══════════════════════════════════════════
+    // SEED DATA
+    // ═══════════════════════════════════════════
+
+    const SEED_FILLERS = [
+      { id: 1, label: 'Work pressure', value: 12 },
+      { id: 2, label: 'Financial worry', value: 18 },
+      { id: 3, label: 'Poor sleep', value: 10 },
+      { id: 4, label: 'Family conflict', value: 15 },
+      { id: 5, label: 'Health concern', value: 11 },
+      { id: 6, label: 'Isolation', value: 8 },
+      { id: 7, label: 'Rumination', value: 9 },
+    ];
+
+    const SEED_EMPTIERS = [
+      { id: 101, label: 'Exercise', value: 14 },
+      { id: 102, label: 'Good conversation', value: 11 },
+      { id: 103, label: 'Time outdoors', value: 9 },
+      { id: 104, label: 'Structured task', value: 8 },
+      { id: 105, label: 'Rest', value: 10 },
+      { id: 106, label: 'Music / creativity', value: 7 },
+      { id: 107, label: 'Helping someone', value: 6 },
+    ];
+
+    function buildSeedHistory() {
+      const now = Date.now();
+      const h = 3600000, d = 86400000;
+      const entries = [];
+      let level = 0;
+
+      const log = (offsetMs, label, delta) => {
+        level = Math.max(0, Math.min(100, level + delta));
+        entries.push({
+          id: entries.length + 1,
+          ts: new Date(now - offsetMs).toISOString(),
+          label, delta, level,
+          type: delta > 0 ? 'filler' : 'emptier'
+        });
+      };
+
+      // Day -2 morning load
+      log(2*d + 10*h, 'Work pressure', 12);
+      log(2*d + 9.8*h, 'Financial worry', 18);
+      log(2*d + 9.5*h, 'Poor sleep', 10);
+      log(2*d + 9*h, 'Family conflict', 15);
+      // Day -2 relief
+      log(2*d + 5*h, 'Exercise', -14);
+      log(2*d + 3*h, 'Structured task', -8);
+      log(2*d + 1*h, 'Good conversation', -11);
+      log(2*d + 0.5*h, 'Rest', -10);
+
+      // Day -1 morning load
+      log(1*d + 10*h, 'Financial worry', 18);
+      log(1*d + 9.5*h, 'Work pressure', 12);
+      log(1*d + 9*h, 'Rumination', 9);
+      log(1*d + 8.5*h, 'Health concern', 11);
+      // Day -1 relief
+      log(1*d + 5*h, 'Time outdoors', -9);
+      log(1*d + 3*h, 'Exercise', -14);
+      log(1*d + 1*h, 'Music / creativity', -7);
+
+      // Today morning load
+      log(8*h, 'Work pressure', 12);
+      log(7.5*h, 'Family conflict', 15);
+      log(7*h, 'Poor sleep', 10);
+      // Today relief
+      log(4*h, 'Exercise', -14);
+      log(2*h, 'Good conversation', -11);
+
+      return { entries, level };
+    }
+
+
+    // ═══════════════════════════════════════════
+    // BUCKET SVG
+    // ═══════════════════════════════════════════
+
+    function BucketSVG({ level, size = 1 }) {
+      const wY = bucketFillY(level);
+      const fillHeight = 188 - wY;
+      const col = levelColor(level);
+
+      // Interpolate surface line x coords within the trapezoid
+      const leftX = 52 + (40 - 52) * (wY - 188) / (48 - 188);
+      const rightX = 148 + (160 - 148) * (wY - 188) / (48 - 188);
+
+      return (
+        <div className="bucket-svg-wrap" style={{ filter: `drop-shadow(0 0 30px ${col.glow})` }}>
+          <svg viewBox="0 0 200 220" width={220 * size} height={286 * size} xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <clipPath id="bucketClip">
+              <clipPath id="bClip">
                 <polygon points="40,48 160,48 148,188 52,188" />
               </clipPath>
-              <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.7" />
-                <stop offset="100%" stop-color="var(--teal)" stop-opacity="0.35" />
+              <linearGradient id={`bFill-${Math.round(level)}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={col.main} stopOpacity="0.75" />
+                <stop offset="100%" stopColor={col.main} stopOpacity="0.3" />
               </linearGradient>
             </defs>
-            <rect
-              class="bucket-fill"
-              x="30" y="137" width="140" height="51"
-              fill="url(#fillGrad)"
-              clip-path="url(#bucketClip)"
-              style="transform-origin: center bottom; animation: fillBucket 1.5s cubic-bezier(0.4,0,0.2,1) 0.6s both;"
+
+            {/* Midline at 50% */}
+            <line x1="52" y1="118" x2="148" y2="118"
+              stroke="rgba(148,163,184,0.12)" strokeWidth="1" strokeDasharray="6 4" />
+
+            {/* Fill */}
+            <rect x="30" y={wY} width="140" height={fillHeight}
+              fill={`url(#bFill-${Math.round(level)})`} clipPath="url(#bClip)"
+              style={{ transition: 'y 0.6s cubic-bezier(0.4,0,0.2,1), height 0.6s cubic-bezier(0.4,0,0.2,1)' }}
             />
 
-            <!-- Bucket body -->
-            <polygon class="bucket-body" points="40,48 160,48 148,188 52,188" />
+            {/* Surface line */}
+            {level > 0 && (
+              <line x1={leftX} y1={wY} x2={rightX} y2={wY}
+                stroke={col.main} strokeWidth="1.5" strokeOpacity="0.5"
+                style={{ transition: 'all 0.6s cubic-bezier(0.4,0,0.2,1)' }}
+              />
+            )}
 
-            <!-- Rim -->
-            <line class="bucket-rim" x1="32" y1="48" x2="168" y2="48" />
+            {/* Body */}
+            <polygon points="40,48 160,48 148,188 52,188"
+              fill="none" stroke={col.main} strokeWidth="2.5" strokeLinejoin="round"
+              style={{ transition: 'stroke 0.5s' }} />
 
-            <!-- Level label -->
-            <text x="100" y="168" text-anchor="middle"
-                  font-family="'DM Sans', sans-serif" font-size="11"
-                  fill="rgba(79,209,197,0.5)" font-weight="500">
-              30%
-            </text>
-
-            <!-- Headroom arrow -->
-            <line x1="170" y1="56" x2="170" y2="132"
-                  stroke="rgba(79,209,197,0.25)" stroke-width="1" />
-            <text x="178" y="98" text-anchor="start"
-                  font-family="'Fraunces', serif" font-size="11"
-                  fill="rgba(79,209,197,0.4)" font-style="italic">
-              headroom
-            </text>
+            {/* Rim */}
+            <line x1="32" y1="48" x2="168" y2="48"
+              stroke={col.main} strokeWidth="3" strokeLinecap="round"
+              style={{ transition: 'stroke 0.5s' }} />
           </svg>
         </div>
-      </div>
-    </div>
-  </section>
+      );
+    }
 
-  <!-- CONCEPT -->
-  <section id="concept">
-    <div class="section-inner">
-      <div class="section-label">The model</div>
-      <h2>Your mind has a capacity. Life fills it up.</h2>
-      <p>The stress-bucket model is used in CBT and addiction recovery. Stressors fill the bucket. Relief actions drain it. When the bucket overflows, automatic behaviours take over. Headroom makes that process visible.</p>
 
-      <div class="concept-grid">
-        <div class="concept-card">
-          <div class="card-icon teal">◧</div>
-          <h3>Load honestly</h3>
-          <p>Each morning, acknowledge every persistent stressor. Legal proceedings. Financial pressure. Relationship strain. The level goes into the red. That is honesty, not failure.</p>
+    // ═══════════════════════════════════════════
+    // HISTORY CHART
+    // ═══════════════════════════════════════════
+
+    function HistoryChart({ entries }) {
+      if (entries.length < 2) return null;
+
+      const W = 520, H = 140, PAD = { t: 10, r: 15, b: 25, l: 35 };
+      const plotW = W - PAD.l - PAD.r;
+      const plotH = H - PAD.t - PAD.b;
+
+      const times = entries.map(e => new Date(e.ts).getTime());
+      const tMin = Math.min(...times);
+      const tMax = Math.max(...times);
+      const tRange = tMax - tMin || 1;
+
+      const points = entries.map(e => {
+        const x = PAD.l + ((new Date(e.ts).getTime() - tMin) / tRange) * plotW;
+        const y = PAD.t + (1 - e.level / 100) * plotH;
+        return { x, y, level: e.level };
+      });
+
+      const line = points.map((p, i) =>
+        `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`
+      ).join(' ');
+
+      const area = line +
+        ` L${points[points.length-1].x.toFixed(1)},${PAD.t + plotH}` +
+        ` L${points[0].x.toFixed(1)},${PAD.t + plotH} Z`;
+
+      const grids = [0, 25, 50, 75, 100];
+
+      return (
+        <div className="history-chart-wrap">
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4fd1c5" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#4fd1c5" stopOpacity="0.02" />
+              </linearGradient>
+            </defs>
+
+            {grids.map(v => {
+              const y = PAD.t + (1 - v / 100) * plotH;
+              return (
+                <g key={v}>
+                  <line x1={PAD.l} y1={y} x2={W - PAD.r} y2={y}
+                    stroke="rgba(148,163,184,0.08)" strokeWidth="1" />
+                  <text x={PAD.l - 6} y={y + 3} textAnchor="end"
+                    fontSize="9" fill="#94a3b8" fontFamily="DM Sans, sans-serif">{v}</text>
+                </g>
+              );
+            })}
+
+            {/* 50% threshold */}
+            <line x1={PAD.l} y1={PAD.t + plotH * 0.5} x2={W - PAD.r} y2={PAD.t + plotH * 0.5}
+              stroke="rgba(246,173,85,0.2)" strokeWidth="1" strokeDasharray="4 3" />
+
+            <path d={area} fill="url(#areaGrad)" />
+            <path d={line} fill="none" stroke="#4fd1c5" strokeWidth="2" strokeLinejoin="round" />
+
+            {points.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r="3"
+                fill={levelColor(p.level).main} stroke="#0f172a" strokeWidth="1.5" />
+            ))}
+          </svg>
         </div>
-        <div class="concept-card">
-          <div class="card-icon amber">↓</div>
-          <h3>Work it down</h3>
-          <p>Through the day, log relief actions as they happen. Exercise. Connection. Rest. Problem-solving. Watch the level come back toward calm.</p>
+      );
+    }
+
+
+    // ═══════════════════════════════════════════
+    // DEMO PAGE
+    // ═══════════════════════════════════════════
+
+    function DemoPage() {
+      const seed = useMemo(() => buildSeedHistory(), []);
+      const [level, setLevel] = useState(seed.level);
+      const [entries, setEntries] = useState(seed.entries);
+      const [tapped, setTapped] = useState(null);
+      const logRef = useRef(null);
+
+      const handleItem = useCallback((item, type) => {
+        const delta = type === 'filler' ? item.value : -item.value;
+        const newLevel = Math.max(0, Math.min(100, level + delta));
+
+        setLevel(newLevel);
+        setEntries(prev => [...prev, {
+          id: Date.now(), ts: new Date().toISOString(),
+          label: item.label, delta, level: newLevel, type
+        }]);
+        setTapped(item.id);
+        setTimeout(() => setTapped(null), 300);
+        setTimeout(() => {
+          if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+        }, 50);
+      }, [level]);
+
+      const handleReset = () => {
+        const s = buildSeedHistory();
+        setLevel(s.level);
+        setEntries(s.entries);
+      };
+
+      const col = levelColor(level);
+      const headroom = 100 - Math.round(level);
+
+      const formatTime = (ts) => {
+        const d = new Date(ts);
+        const diffDays = Math.floor((Date.now() - d) / 86400000);
+        const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        if (diffDays === 0) return time;
+        if (diffDays === 1) return 'yday';
+        return `${diffDays}d`;
+      };
+
+      return (
+        <div className="demo-page">
+          <div className="demo-banner">
+            <strong>Demo</strong> — tap items to see the bucket respond. Data resets on reload.
+          </div>
+          <div className="demo-layout">
+            <div className="bucket-panel">
+              <BucketSVG level={level} size={1.1} />
+              <div className="bucket-meta">
+                <div className="level-reading" style={{ color: col.main }}>{Math.round(level)}%</div>
+                <div className="level-label">{levelWord(level)}</div>
+                <div className="headroom-reading">{headroom}% headroom</div>
+              </div>
+              <button className="reset-btn" onClick={handleReset}>Reset demo</button>
+            </div>
+
+            <div className="items-panel">
+              <div className="item-group fillers">
+                <h3><span className="dot"></span> Load</h3>
+                <div className="items-grid">
+                  {SEED_FILLERS.map(item => (
+                    <button key={item.id}
+                      className={`item-btn filler${tapped === item.id ? ' tapped' : ''}`}
+                      onClick={() => handleItem(item, 'filler')}>
+                      {item.label}<span className="impact">+{item.value}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="item-group emptiers">
+                <h3><span className="dot"></span> Relief</h3>
+                <div className="items-grid">
+                  {SEED_EMPTIERS.map(item => (
+                    <button key={item.id}
+                      className={`item-btn emptier${tapped === item.id ? ' tapped' : ''}`}
+                      onClick={() => handleItem(item, 'emptier')}>
+                      {item.label}<span className="impact">-{item.value}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="history-section">
+                <h3>History</h3>
+                <HistoryChart entries={entries} />
+                <div className="history-log" ref={logRef}>
+                  {entries.slice().reverse().map(e => (
+                    <div className="log-entry" key={e.id}>
+                      <span className="time">{formatTime(e.ts)}</span>
+                      <span className="label">{e.label}</span>
+                      <span className={`delta ${e.delta > 0 ? 'up' : 'down'}`}>
+                        {e.delta > 0 ? '+' : ''}{e.delta}
+                      </span>
+                      <span className="level-after">{Math.round(e.level)}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="concept-card">
-          <div class="card-icon coral">◉</div>
-          <h3>See the pattern</h3>
-          <p>Continuous history makes gradual buildups visible over days and weeks. Spot the slow drift before it reaches the point where decisions are no longer yours to make.</p>
+      );
+    }
+
+
+    // ═══════════════════════════════════════════
+    // LANDING PAGE
+    // ═══════════════════════════════════════════
+
+    function LandingPage({ navigate }) {
+      return (
+        <div className="page">
+          <section className="hero">
+            <div className="hero-inner">
+              <div className="hero-text">
+                <h1>Headroom</h1>
+                <div className="strapline">know your headroom</div>
+                <p>A personal psychological load management tool built on the stress-bucket model. See your current state. Understand your capacity. Make better decisions about the day ahead.</p>
+                <a className="btn-primary" onClick={() => navigate('demo')}>Try the demo</a>
+              </div>
+              <div className="hero-bucket">
+                <BucketSVG level={30} size={1.2} />
+              </div>
+            </div>
+          </section>
+
+          <section className="page-section">
+            <div className="section-inner">
+              <div className="section-label">The model</div>
+              <h2>Your mind has a capacity. Life fills it up.</h2>
+              <p>The stress-bucket model is used in CBT and addiction recovery. Stressors fill the bucket. Relief actions drain it. When the bucket overflows, automatic behaviours take over. Headroom makes that process visible.</p>
+              <div className="concept-grid">
+                <div className="concept-card">
+                  <div className="card-icon teal">&#9703;</div>
+                  <h3>Load honestly</h3>
+                  <p>Each morning, acknowledge every persistent stressor. Legal proceedings. Financial pressure. Relationship strain. The level goes into the red. That is honesty, not failure.</p>
+                </div>
+                <div className="concept-card">
+                  <div className="card-icon amber">&darr;</div>
+                  <h3>Work it down</h3>
+                  <p>Through the day, log relief actions as they happen. Exercise. Connection. Rest. Problem-solving. Watch the level come back toward calm.</p>
+                </div>
+                <div className="concept-card">
+                  <div className="card-icon coral">&#9673;</div>
+                  <h3>See the pattern</h3>
+                  <p>Continuous history makes gradual buildups visible over days and weeks. Spot the slow drift before it reaches the point where decisions are no longer yours to make.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="page-section">
+            <div className="section-inner">
+              <div className="section-label">Origin</div>
+              <h2>Built from lived experience</h2>
+              <p>Headroom started with a conversation between a service user and a keyworker at Change Grow Live Nottingham. The keyworker introduced the stress-bucket model. The service user — a data analyst and developer — built a working application from it.</p>
+              <div className="origin-quote">
+                The bucket model made sense immediately. But I needed to see it. I needed the number in front of me, updating in real time, honest about where I was.
+              </div>
+              <p>The developer has used Headroom daily since early 2026 as a personal recovery support tool. This is not a product designed in a lab. It was built by someone who needed it and uses it every day.</p>
+            </div>
+          </section>
+
+          <section className="page-section cta-section">
+            <div className="section-inner">
+              <div className="section-label">Get in touch</div>
+              <h2>Interested in Headroom?</h2>
+              <p>Whether you are a recovery service, a funder, or someone who recognises the model from your own experience — we would like to hear from you.</p>
+              <a href="mailto:9rogr4mm3r@gmail.com" className="btn-primary">Get in touch</a>
+            </div>
+          </section>
         </div>
-      </div>
-    </div>
-  </section>
+      );
+    }
 
-  <!-- ORIGIN -->
-  <section id="origin" class="origin-section">
-    <div class="section-inner">
-      <div class="section-label">Origin</div>
-      <h2>Built from lived experience</h2>
-      <p>Headroom started with a conversation between a service user and a keyworker at Change Grow Live Nottingham. The keyworker introduced the stress-bucket model. The service user, who is a data analyst and developer, built a working application from it.</p>
-      <div class="origin-quote">
-        The bucket model made sense immediately. But I needed to see it. I needed the number in front of me, updating in real time, honest about where I was.
-      </div>
-      <p>The developer has used Headroom daily since early 2026 as a personal recovery support tool. This is not a product designed in a lab. It was built by someone who needed it and uses it every day.</p>
-    </div>
-  </section>
 
-  <!-- CTA -->
-  <section id="contact" class="cta-section">
-    <div class="section-inner">
-      <div class="section-label">Get in touch</div>
-      <h2>Interested in Headroom?</h2>
-      <p>Whether you are a recovery service, a funder, or someone who recognises the model from your own experience we would like to hear from you.</p>
-      <a href="mailto:davidbrand@logicscience.co.uk" class="btn-primary" style="opacity:1; animation:none;">Get in touch</a>
-    </div>
-  </section>
+    // ═══════════════════════════════════════════
+    // PLACEHOLDER PAGES
+    // ═══════════════════════════════════════════
 
-  <!-- FOOTER -->
-  <footer>
-    <p>&copy; 2026 Headroom. Built in Nottingham.</p>
-  </footer>
+    function AboutPage() {
+      return (
+        <div className="placeholder-page">
+          <div className="placeholder-inner">
+            <h1>About</h1>
+            <p>The full story of Headroom — the CGL connection, the lived experience, and the vision. Coming soon.</p>
+          </div>
+        </div>
+      );
+    }
 
+    function SciencePage() {
+      return (
+        <div className="placeholder-page">
+          <div className="placeholder-inner">
+            <h1>The Science</h1>
+            <p>The neuroscience behind the bucket model — the parallel network shift from reflective to automatic systems under load. Coming soon.</p>
+          </div>
+        </div>
+      );
+    }
+
+    function ContactPage() {
+      return (
+        <div className="placeholder-page">
+          <div className="placeholder-inner">
+            <h1>Contact</h1>
+            <p style={{ marginBottom: '2rem' }}>Interested in Headroom? Get in touch.</p>
+            <a href="mailto:9rogr4mm3r@gmail.com" className="btn-primary">9rogr4mm3r@gmail.com</a>
+          </div>
+        </div>
+      );
+    }
+
+
+    // ═══════════════════════════════════════════
+    // APP — ROUTER
+    // ═══════════════════════════════════════════
+
+    function App() {
+      const getRoute = () => {
+        const hash = window.location.hash.replace('#/', '').replace('#', '');
+        return hash || 'home';
+      };
+
+      const [route, setRoute] = useState(getRoute);
+
+      useEffect(() => {
+        const onHash = () => setRoute(getRoute());
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
+      }, []);
+
+      const navigate = (r) => {
+        window.location.hash = `#/${r}`;
+        window.scrollTo(0, 0);
+      };
+
+      const navLink = (r, label) => (
+        <a className={route === r ? 'active' : ''} onClick={() => navigate(r)}>{label}</a>
+      );
+
+      let page;
+      switch (route) {
+        case 'demo': page = <DemoPage />; break;
+        case 'about': page = <AboutPage />; break;
+        case 'science': page = <SciencePage />; break;
+        case 'contact': page = <ContactPage />; break;
+        default: page = <LandingPage navigate={navigate} />;
+      }
+
+      return (
+        <>
+          <nav>
+            <a className="logo" onClick={() => navigate('home')}>headroom</a>
+            <ul className="nav-links">
+              <li>{navLink('demo', 'Demo')}</li>
+              <li>{navLink('about', 'About')}</li>
+              <li>{navLink('science', 'Science')}</li>
+              <li>{navLink('contact', 'Contact')}</li>
+            </ul>
+          </nav>
+          {page}
+          <footer>
+            <p>&copy; 2026 Headroom. Built in Nottingham. <a onClick={() => navigate('contact')}>Contact</a></p>
+          </footer>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
