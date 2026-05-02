@@ -255,10 +255,22 @@
       background: var(--bg-card); border: 1px solid var(--border);
       border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem;
     }
+    .history-log-wrap {
+      position: relative;
+      max-height: 320px;
+      overflow: hidden;
+    }
+    .history-log-wrap::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+      background: linear-gradient(transparent, var(--bg));
+      pointer-events: none; z-index: 1;
+    }
     .history-log {
       display: flex; flex-direction: column; gap: 0.35rem;
-      max-height: 300px; overflow-y: auto;
+      max-height: 320px; overflow-y: auto;
       scrollbar-width: thin; scrollbar-color: var(--bg-elevated) var(--bg-card);
+      padding-bottom: 2.5rem;
     }
     .log-entry {
       display: flex; align-items: center; gap: 0.75rem;
@@ -602,7 +614,7 @@
         setTapped(item.id);
         setTimeout(() => setTapped(null), 300);
         setTimeout(() => {
-          if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
+          if (logRef.current) logRef.current.scrollTop = 0;
         }, 50);
       }, [level]);
 
@@ -670,6 +682,7 @@
               <div className="history-section">
                 <h3>History</h3>
                 <HistoryChart entries={entries} />
+                <div className="history-log-wrap">
                 <div className="history-log" ref={logRef}>
                   {entries.slice().reverse().map(e => (
                     <div className="log-entry" key={e.id}>
@@ -681,6 +694,7 @@
                       <span className="level-after">{Math.round(e.level)}%</span>
                     </div>
                   ))}
+                </div>
                 </div>
               </div>
             </div>
