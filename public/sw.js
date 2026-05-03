@@ -1,9 +1,10 @@
-const CACHE_NAME = 'headroom-v1';
+const CACHE_NAME = 'headroom-v2';
 const SHELL = [
   '/',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/Headroom-CGL-Proposal.pdf',
   'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500;600&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',

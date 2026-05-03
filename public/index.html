@@ -352,7 +352,7 @@
       padding-left: 1.5rem; margin: 2rem 0; max-width: 560px; line-height: 1.6;
     }
 
-    /* Science page - network cards */
+    /* Why page - network cards */
     .network-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
       margin: 2rem 0;
@@ -375,8 +375,59 @@
       font-size: 0.92rem; color: var(--text-muted); line-height: 1.6;
     }
     .ref-item strong { color: var(--text); font-weight: 500; }
+    .ref-item a {
+      color: var(--teal); text-decoration: none; font-size: 0.82rem;
+      word-break: break-all; display: inline-block; margin-top: 0.25rem;
+      opacity: 0.7; transition: opacity 0.2s;
+    }
+    .ref-item a:hover { opacity: 1; text-decoration: underline; }
+    .ref-item .ref-supports {
+      display: block; margin-top: 0.35rem; font-size: 0.88rem;
+      color: var(--text-muted); line-height: 1.6;
+    }
 
-    /* Contact page */
+    /* Resources / download cards */
+    .download-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .download-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.75rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .download-card h3 {
+      font-family: var(--font-display); font-weight: 600; font-size: 1.05rem;
+      color: var(--text-bright);
+    }
+    .download-card p { font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .download-link {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: var(--teal); text-decoration: none; font-weight: 500;
+      font-size: 0.9rem; transition: opacity 0.2s;
+    }
+    .download-link:hover { opacity: 0.8; }
+
+    /* Content quote with attribution */
+    .content-model-statement {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 3px solid var(--teal); border-radius: 0 10px 10px 0;
+      padding: 1.5rem 1.75rem; margin: 2rem 0;
+      font-family: var(--font-display); font-style: italic; font-weight: 300;
+      font-size: 1.05rem; color: var(--text); line-height: 1.7;
+    }
+    .content-model-statement .attribution {
+      display: block; margin-top: 1rem; font-size: 0.82rem;
+      font-style: normal; color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .network-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .download-grid { grid-template-columns: 1fr; }
+      .content-hero { padding: 3rem 1.5rem 2rem; }
+      .content-section { padding: 3rem 1.5rem; }
+    }
     .contact-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
       margin-top: 2rem;
@@ -396,13 +447,6 @@
       transition: border-color 0.2s;
     }
     .contact-card a:hover { border-color: var(--teal); }
-
-    @media (max-width: 768px) {
-      .network-grid { grid-template-columns: 1fr; }
-      .contact-grid { grid-template-columns: 1fr; }
-      .content-hero { padding: 3rem 1.5rem 2rem; }
-      .content-section { padding: 3rem 1.5rem; }
-    }
 
     /* ─── ANIMATIONS ─── */
     @keyframes fadeUp {
@@ -926,22 +970,48 @@
       );
     }
 
-    function SciencePage() {
+    function WhyPage() {
+      const Ref = ({ num, authors, title, journal, url }) => (
+        <div className="ref-item">
+          <strong>[{num}] {authors}.</strong> {title}. <em>{journal}.</em>
+          {url && <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>}
+        </div>
+      );
+
       return (
         <div className="content-page">
           <div className="content-hero">
             <div className="section-inner">
-              <div className="section-label">The science</div>
-              <h1>The neuroscience behind the bucket</h1>
-              <p className="lead">The stress-bucket model maps onto a well-established neuroscientific framework: under load, the brain shifts from reflective, goal-directed systems to faster, automatic ones. Headroom makes that shift visible.</p>
+              <div className="section-label">Why it works</div>
+              <h1>A grounded explanation of the biology, the disease, and the mechanism</h1>
+              <p className="lead">Headroom works because it operationalises an accurate model of what addiction is and what recovery requires. This page explains the biology, the disease model, and the specific mechanism the application addresses.</p>
             </div>
           </div>
 
           <div className="content-section">
             <div className="section-inner">
-              <h2>The parallel network shift</h2>
-              <p>Addiction neuroscience describes a <strong>parallel network shift</strong> that occurs under sustained stress and substance exposure. This is not a linear cascade. It is multiple systems changing their relative influence simultaneously.</p>
-              <p>Under low load, the <strong>prefrontal cortex</strong> (PFC) dominates decision-making, weighing consequences, inhibiting impulses, maintaining goals. As load increases, control shifts toward faster, older systems that operate below conscious awareness.</p>
+              <h2>The thing addiction actually is</h2>
+              <p>Addiction is not a failure of willpower. It is not a moral defect, a character flaw, or a problem of insufficient discipline. It is a neurobiological disease of the brain's reward, motivation, and executive control systems, and it has been recognised as such by every major medical and research body for decades.</p>
+              <p>The American Society of Addiction Medicine defines it as a treatable, chronic medical disease involving complex interactions among brain circuits, genetics, the environment, and an individual's life experiences. The National Institute on Drug Abuse describes addiction as a chronic, relapsing disorder characterised by compulsive drug seeking and use despite adverse consequences, and notes that it is considered a brain disorder because it involves functional changes to brain circuits involved in reward, stress, and self-control.</p>
+              <p>This matters because the way addiction is talked about in everyday life lags decades behind the science. People still think of relapse as weakness. The person living with the disease often thinks of themselves the same way. Both the shame and the willpower-based strategies that follow from it are not just unhelpful, they are actively contraindicated. They make recovery harder. They prolong the disease. They are the wrong tool for the job because they target the wrong layer of the brain.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>The genetic foundation</h2>
+              <p>Before any environmental input, before any first drink, before any conscious choice, there is a genome. Twin and adoption studies have established for decades that addiction has a substantial heritable component. The heritability of alcohol use disorder is estimated at approximately 50 to 60 percent, placing addiction among the most heritable of psychiatric conditions, comparable to schizophrenia and bipolar disorder <sup>[26,27]</sup>.</p>
+              <p>The genetic contribution does not work through a single gene. Genome-wide association studies have identified hundreds of genetic variants that each contribute small effects to addiction risk, with the cumulative effect being substantial <sup>[28,29,30]</sup>. The picture is not one of a single broken gene but of a polygenic susceptibility distributed across many small contributions, each subtly shaping the brain that develops from that genome.</p>
+              <p>People who develop severe addictions are not weaker than those who do not. They are working with a brain whose factory settings made the substance more rewarding, the craving more intense, the impulse harder to inhibit, and the eventual habit more deeply encoded. None of this makes the condition uncontrollable. It makes it understandable.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>Two layers, one problem</h2>
+              <p>The brain is not a single system. For the purposes of understanding addiction, it is useful to think of it as two cooperating systems running on different timescales.</p>
+              <p>The first system is the <strong>prefrontal cortex</strong> and its associated networks. This is the part of the brain that handles planning, deliberation, conscious commitment, language-based reasoning, and executive control. It is the part that says "I have decided not to drink." It works on a slow timescale, takes effort to operate, fatigues under stress, and sleeps when you sleep. The prefrontal cortex is also the last region of the brain to fully develop, with maturation continuing into the mid-twenties, and it is among the most vulnerable to chronic stress and substance-induced damage <sup>[5,6]</sup>.</p>
+              <p>The second system is older, deeper, and faster. It includes the brainstem, the limbic system, the basal ganglia, and the dopaminergic pathways that connect them. This system handles survival, motivation, threat detection, and the formation of habits. It does not use language. It does not deliberate. It runs on pattern-matching and affect, and it operates in milliseconds. It evolved long before the cortex did, and in any contest of speed or persistence, it wins.</p>
 
               <div className="network-grid">
                 <div className="network-card reflective">
@@ -954,44 +1024,156 @@
                 </div>
               </div>
 
-              <p>The bucket level in Headroom is a proxy for this shift. A low level means reflective systems are in control. A high level means automatic systems are gaining influence. The overflow point is where decisions stop being yours to make.</p>
+              <p>In a healthy brain, these two systems cooperate. The deeper system flags what matters. The cortex evaluates and decides. Addiction breaks the cooperation. Repeated substance use produces lasting changes in the deeper system that encode the substance as a survival-grade reward on the same priority level as food, water, or escape from a predator <sup>[1,2,3]</sup>. Simultaneously, chronic substance use produces measurable hypofunction in the prefrontal cortex, weakening the very system that would otherwise inhibit the impulse <sup>[4,5]</sup>.</p>
+              <p>This is why people who genuinely do not want to drink, drink anyway. The cortex was outvoted before it knew there was a vote.</p>
             </div>
           </div>
 
           <div className="content-section">
             <div className="section-inner">
-              <h2>The key structures</h2>
-              <p><strong>Prefrontal cortex (PFC).</strong> Executive control, decision-making, impulse inhibition. Research by Arnsten and others shows PFC function degrades under sustained stress, reducing capacity for reflective decision-making.</p>
-              <p><strong>Anterior cingulate cortex (ACC).</strong> Conflict monitoring and error detection. Under chronic substance exposure, the ACC shows dysregulated activation to drug-related cues, disrupting the brain's ability to flag when behaviour conflicts with goals.</p>
-              <p><strong>Amygdala.</strong> Threat detection and negative reinforcement. Koob's opponent-process model describes how the amygdala drives increasingly powerful negative emotional states during withdrawal, creating compulsive motivation to use.</p>
-              <p><strong>Nucleus accumbens.</strong> The wanting system. Robinson and Berridge's incentive-sensitization theory describes how this structure becomes hypersensitised to substance-related cues, generating intense wanting independent of liking or conscious choice.</p>
-              <p><strong>Basal ganglia.</strong> Habit formation. With repeated use, behaviours shift from goal-directed (ventral) to habitual (dorsal) striatal control, meaning the behaviour executes automatically without conscious decision.</p>
-              <p><strong>Hippocampus.</strong> Contextual memory. Encodes the environmental cues associated with use, enabling powerful context-driven retrieval of craving and habitual response patterns.</p>
+              <h2>Why willpower fails</h2>
+              <p>Willpower is a cortical strategy. It depends on the slower, deliberative system to override the faster, automatic one. It works when the cortex is well-rested, well-fed, unstressed, well-supported, and operating below its capacity. It fails when any of those conditions degrades.</p>
+              <p>This is not a metaphor. It is a measurable phenomenon. Stress is among the most reliable predictors of relapse across substances, with stress-induced craving and prefrontal hypofunction directly observable in neuroimaging studies <sup>[10]</sup>. Sleep deprivation impairs the prefrontal regulation of emotional and reward processing. The cumulative effect of multiple simultaneous stressors degrades inhibitory control more than any single stressor alone, a phenomenon described in the allostatic load framework <sup>[9]</sup>.</p>
+              <p>The standard advice given to people in recovery assumes that the cortex can be made strong enough to win every contest with the deeper system. The evidence is overwhelming that it cannot. The cortex is the wrong tool for sustained inhibition of a survival-encoded craving response when that response has been amplified by years of use and embedded in a genome that was already vulnerable.</p>
             </div>
           </div>
 
           <div className="content-section">
             <div className="section-inner">
-              <h2>What the bucket measures</h2>
-              <p>The bucket level does not directly measure brain activity. It measures <strong>subjective psychological load</strong>: the accumulation of stressors that research shows degrades PFC function and increases the influence of automatic systems.</p>
-              <p>The clinical value is in the <strong>pattern over time</strong>. A gradual rise over days or weeks, even if each individual reading seems manageable, is the signature of the slow buildup that precedes relapse in addiction recovery.</p>
-              <p>By making this pattern visible and giving the user tools to actively manage it, Headroom turns a therapeutic metaphor into a daily practice with a persistent, reviewable record.</p>
+              <h2>What recovery actually requires</h2>
+              <p>Recovery is not the elimination of the deeper-system pattern. The neural pathways laid down by repeated substance use do not disappear. They become quieter with disuse, they are partially pruned at the edges, they lose some of their automatic priority, but the architecture remains. This is what is meant when addiction is called a chronic disease. Like asthma, hypertension, or type 2 diabetes, it is not cured, it is managed.</p>
+              <p>What recovery requires is the construction of conditions under which the deeper-system pattern is rarely activated, and supports for the cortex during the moments when it is. Both pieces matter. Neither alone is sufficient.</p>
+              <p>The <strong>conditions side</strong> involves identifying the inputs that load the system: stress, isolation, unresolved emotional weight, poor sleep, nutritional deficits, untreated co-occurring mental health conditions, social environments associated with use, and the slow accumulation of unprocessed daily friction. Each of these inputs adds to a kind of internal pressure. When the pressure crosses a threshold, the deeper system is more likely to fire <sup>[9,10]</sup>.</p>
+              <p>The <strong>cortical-support side</strong> involves the things that strengthen and rest the prefrontal system: adequate sleep, regular aerobic exercise, nutrition, social connection, meaningful work, therapy, and any practice that builds the brain's capacity to notice its own state without acting on it.</p>
+              <p>These are not soft adjuncts to a willpower-based strategy. They are the actual mechanism by which sustained recovery becomes possible.</p>
             </div>
           </div>
 
           <div className="content-section">
             <div className="section-inner">
-              <h2>Clinical references</h2>
-              <p>The model draws on peer-reviewed research across addiction neuroscience, stress physiology, and executive function. Key sources include:</p>
-              <div className="ref-list">
-                <div className="ref-item"><strong>Koob &amp; Volkow (2016).</strong> Neurobiology of addiction: a neurocircuitry analysis. Lancet Psychiatry.</div>
-                <div className="ref-item"><strong>Robinson &amp; Berridge (1993, 2008).</strong> Incentive-sensitization theory of addiction. Brain Research Reviews.</div>
-                <div className="ref-item"><strong>Arnsten (2009).</strong> Stress signalling pathways that impair prefrontal cortex structure and function. Nature Reviews Neuroscience.</div>
-                <div className="ref-item"><strong>SAMHSA / US Surgeon General (2016).</strong> Facing Addiction in America: The Surgeon General's Report on Alcohol, Drugs, and Health.</div>
-                <div className="ref-item"><strong>Everitt &amp; Robbins (2005).</strong> Neural systems of reinforcement for drug addiction: from actions to habits to compulsion. Nature Neuroscience.</div>
-                <div className="ref-item"><strong>Goldstein &amp; Volkow (2011).</strong> Dysfunction of the prefrontal cortex in addiction: neuroimaging findings and clinical implications. Nature Reviews Neuroscience.</div>
+              <h2>What Headroom does</h2>
+              <p>Headroom is a tool for the conditions side of the work. It does not try to strengthen the cortex through exhortation. It does not ask the user to commit harder, decide more firmly, or want recovery enough. It assumes the user already wants recovery, and it provides a structure for managing the inputs that determine whether the deeper system is likely to fire.</p>
+              <p>Each day, the user tracks both load and relief. The app produces a single visible measure of where they currently sit relative to the threshold at which the deeper system becomes harder to manage. The measure is not a moral judgement. It is not a score. It is a representation of internal pressure relative to the user's own capacity to hold it.</p>
+              <p>The space below the threshold is the headroom. The whole working principle of the app is that the headroom is what the user is actually managing. Not the threshold itself, which is biological and largely fixed. Not the desire for the substance, which is a downstream consequence of load and threshold. The headroom. The margin. The space the user keeps clear so that on any given day, the deeper system has no good reason to fire.</p>
+              <p>The bucket metaphor is a folk version of the model formalised in the literature as allostatic load, the diathesis-stress framework, and the cumulative risk perspective on relapse. Headroom takes the concept and gives it a daily, visible, actionable form.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>Why visibility matters</h2>
+              <p>Most people in recovery cannot accurately track their own internal pressure. The deeper system does not produce verbal reports. It produces affect, impulse, irritability, restlessness, fatigue, the sense of something being wrong. By the time these surface as conscious distress, the load is often already high. By the time they surface as craving, it is too late for cortical strategies to be reliable.</p>
+              <p>A visible, externalised measure of internal load addresses this directly. It moves the tracking from the deeper system, which cannot speak, to the cortex, which can. It makes the otherwise-invisible pressure available to the deliberative part of the brain at a stage when the deliberative part can still act.</p>
+              <p>The user sees their bucket filling on a Tuesday morning and goes for a run, calls a friend, books a counselling session, takes the day off, gets to bed early. They do something that adds to the positives or removes from the negatives, and the load comes down. They never reach the threshold. The deeper system never fires. The day passes uneventfully.</p>
+              <p>Without the visible measure, the same Tuesday ends with the user surprised to find themselves at the off-licence at six in the evening with no memory of having decided to go.</p>
+              <p>This is the difference Headroom makes. Not stronger willpower. Not deeper commitment. Earlier visibility, and therefore earlier action.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>What the app is not</h2>
+              <p>Headroom is not a treatment. It does not replace counselling, medical care, medication-assisted recovery, peer support, or any of the established components of addiction treatment. It is a daily management tool that complements them.</p>
+              <p>It is also not a solution to the underlying disease. What changes, with consistent use and consistent application of the recovery work it supports, is the frequency and intensity of episodes during which the deeper system fires. For some users, that frequency drops to zero for long periods. For others, it remains rare but possible. Both outcomes are recoveries. Both are managed disease. Neither is failure.</p>
+              <p>The app is not for people whose substance use is not yet a problem. It is not a wellness product. It is a tool for people who already know they are managing a chronic condition and who are looking for a structure that does not insult the seriousness of what they are managing.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>The claim, plainly</h2>
+              <p>Headroom works because it operationalises an accurate model of what addiction is and what recovery requires. It works because it targets the right layer of the brain with the right intervention at the right time. It works because it replaces a story that does not match the biology with one that does, and because the story that matches the biology is also the story that produces sustained recovery.</p>
+              <p>It is not magic. It is not a cure. It is a tool that makes the daily work of managing a chronic disease visible, ordinary, and possible.</p>
+              <p>That is enough.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>The supported model statement</h2>
+              <div className="content-model-statement">
+                Relapse is not a single decision. It is a narrowing corridor. Stress and load increase bodily distress and weaken prefrontal inhibitory control. Drug cues and internal states activate hippocampal and amygdala-linked memories of relief. The nucleus accumbens and VTA assign alcohol exaggerated incentive salience: the wanting intensifies without rational basis. The dorsal striatum then supplies the learned route: stand up, get keys, walk to the shop, buy, open, drink. Consciousness may only fully return once the sequence is already running. Recovery therefore depends less on heroic last-second resistance and more on preventing the network from reaching the automatic-habit stage, which is what the daily practice of load monitoring is for.
+                <span className="attribution">Adapted from Koob &amp; Volkow (2010), SAMHSA Surgeon General's Report (2016), Robinson &amp; Berridge (2025), and Ceceli et al. (2026).</span>
               </div>
-              <p>A full reference list with 17 verified sources and URLs is available in the Headroom clinical references document.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>Clinical and neuroscientific references</h2>
+              <p>All references below have been independently verified as published and correctly attributed. Where the neuroscientific model in the application uses a simplified visual representation, the references document the full complexity of the underlying systems.</p>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Addiction neurocircuitry</h3>
+              <div className="ref-list">
+                <Ref num="1" authors="Koob GF, Volkow ND (2010)" title="Neurocircuitry of addiction" journal="Neuropsychopharmacology, 35(1), 217-238" url="https://www.nature.com/articles/npp2009110" />
+                <Ref num="2" authors="SAMHSA (2016)" title="The Neurobiology of Substance Use, Misuse, and Addiction. Chapter 2 in Facing Addiction in America: The Surgeon General's Report" journal="US Dept of Health and Human Services" url="https://www.ncbi.nlm.nih.gov/books/NBK424849/" />
+                <Ref num="3" authors="Robinson TE, Berridge KC (2025)" title="The Incentive-Sensitization Theory of Addiction 30 Years On" journal="Annual Review of Psychology, 76, 29-58" url="https://www.annualreviews.org/content/journals/10.1146/annurev-psych-011624-024031" />
+                <Ref num="4" authors="Ceceli AO et al. (2026)" title="The Impaired Response Inhibition and Salience Attribution (iRISA) Model of Drug Addiction" journal="Annual Review of Psychology, 77, 81-108" url="https://www.annualreviews.org/content/journals/10.1146/annurev-psych-040725-025923" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Prefrontal cortex, stress, and executive control</h3>
+              <div className="ref-list">
+                <Ref num="5" authors="Arnsten AFT (2009)" title="Stress Signalling Pathways that Impair Prefrontal Cortex Structure and Function" journal="Nature Reviews Neuroscience, 10(6), 410-422" url="https://medicine.yale.edu/lab/arnsten/research/uncontrollable/" />
+                <Ref num="6" authors="McEwen BS et al. (2013)" title="The Brain on Stress: Vulnerability and Plasticity of the Prefrontal Cortex over the Life Course" journal="Neuron, 79(1), 16-29" url="https://www.sciencedirect.com/science/article/pii/S0896627313005448" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Anterior cingulate cortex</h3>
+              <div className="ref-list">
+                <Ref num="7" authors="Eldreth DA et al. (2009)" title="Impaired Error Awareness and Anterior Cingulate Cortex Hypoactivity in Chronic Cannabis Users" journal="Neuropsychopharmacology, 34(11), 2450-2458" url="https://www.nature.com/articles/npp200967" />
+                <Ref num="8" authors="Zilverstand A et al. (2021)" title="Neurobiological Correlates of Cue-Reactivity in Alcohol-Use Disorders: A Voxel-wise Meta-analysis" journal="Neuroscience and Biobehavioral Reviews, 128, 149-164" url="https://www.sciencedirect.com/science/article/abs/pii/S0149763421002736" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Amygdala and stress systems</h3>
+              <div className="ref-list">
+                <Ref num="9" authors="Koob GF (2015)" title="The dark side of emotion: the addiction perspective" journal="European Journal of Pharmacology, 753, 73-87" url="https://www.ncbi.nlm.nih.gov/books/NBK424849/" />
+                <Ref num="10" authors="Sinha R (2024)" title="Stress and substance use disorders: risk, relapse, and treatment outcomes" journal="Journal of Clinical Investigation, 134(4)" url="https://www.jci.org/articles/view/172883" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Hippocampus and contextual memory</h3>
+              <div className="ref-list">
+                <Ref num="11" authors="Bhatt S et al. (2022)" title="Neural Circuit Dynamics of Drug-Context Associative Learning in the Mouse Hippocampus" journal="Nature Communications, 13, 6485" url="https://www.nature.com/articles/s41467-022-34114-x" />
+                <Ref num="12" authors="Kutlu MG, Gould TJ (2016)" title="Memory Systems and the Addicted Brain" journal="Frontiers in Psychiatry, 7, 24" url="https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2016.00024/full" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Nucleus accumbens and incentive salience</h3>
+              <div className="ref-list">
+                <Ref num="13" authors="Berridge KC, Robinson TE (2016)" title="Liking, Wanting, and the Incentive-Sensitization Theory of Addiction" journal="American Psychologist, 71(8), 670-679" url="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11773642/" />
+                <Ref num="14" authors="Oberlin BG et al. (2013)" title="Beer Flavor Provokes Striatal Dopamine Release in Male Drinkers: Mediation by Family History of Alcoholism" journal="Neuropsychopharmacology, 38(9), 1617-1624" url="https://www.nature.com/articles/npp201391" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Basal ganglia, habits, and compulsion</h3>
+              <div className="ref-list">
+                <Ref num="15" authors="Corbit LH, Janak PH (2016)" title="Habitual Alcohol Seeking: Neural Bases and Possible Relations to Alcohol Use Disorders" journal="Alcoholism: Clinical and Experimental Research, 40(7), 1380-1389" url="https://www.frontiersin.org/journals/systems-neuroscience/articles/10.3389/fnsys.2019.00028/full" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Memory reconsolidation</h3>
+              <div className="ref-list">
+                <Ref num="16" authors="Merlo E et al. (2023)" title="Drug Memory Reconsolidation: From Molecular Mechanisms to the Clinical Context" journal="Translational Psychiatry, 13, 356" url="https://www.nature.com/articles/s41398-023-02666-1" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Clinical safety</h3>
+              <div className="ref-list">
+                <Ref num="17" authors="NHS England (2023)" title="Treatment: Alcohol Misuse" journal="NHS.uk" url="https://www.nhs.uk/conditions/alcohol-misuse/treatment/" />
+              </div>
+
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', color: 'var(--text-bright)', marginTop: '2rem', marginBottom: '0.5rem' }}>Additional references</h3>
+              <div className="ref-list">
+                <Ref num="18" authors="Volkow ND, Koob GF, McLellan AT (2016)" title="Neurobiologic Advances from the Brain Disease Model of Addiction" journal="New England Journal of Medicine, 374(4), 363-371" />
+                <Ref num="19" authors="McLellan AT, Lewis DC, O'Brien CP, Kleber HD (2000)" title="Drug Dependence, a Chronic Medical Illness: Implications for Treatment, Insurance, and Outcomes Evaluation" journal="JAMA, 284(13), 1689-1695" />
+                <Ref num="20" authors="Goldstein RZ, Volkow ND (2011)" title="Dysfunction of the Prefrontal Cortex in Addiction: Neuroimaging Findings and Clinical Implications" journal="Nature Reviews Neuroscience, 12(11), 652-669" />
+                <Ref num="21" authors="Witkiewitz K, Marlatt GA (2004)" title="Relapse Prevention for Alcohol and Drug Problems: That Was Zen, This Is Tao" journal="American Psychologist, 59(4), 224-235" />
+                <Ref num="22" authors="Garland EL, Froeliger B, Howard MO (2014)" title="Mindfulness Training Targets Neurocognitive Mechanisms of Addiction" journal="Frontiers in Psychiatry, 4, 173" />
+                <Ref num="23" authors="Wang D et al. (2014)" title="Impact of Physical Exercise on Substance Use Disorders: A Meta-analysis" journal="PLOS ONE, 9(10), e110728" />
+                <Ref num="24" authors="White WL (2007)" title="Addiction Recovery: Its Definition and Conceptual Boundaries" journal="Journal of Substance Abuse Treatment, 33(3), 229-241" />
+                <Ref num="25" authors="Bechara A (2005)" title="Decision Making, Impulse Control and Loss of Willpower to Resist Drugs: A Neurocognitive Perspective" journal="Nature Neuroscience, 8(11), 1458-1463" />
+                <Ref num="26" authors="Verhulst B, Neale MC, Kendler KS (2015)" title="The Heritability of Alcohol Use Disorders: A Meta-analysis of Twin and Adoption Studies" journal="Psychological Medicine, 45(5), 1061-1072" />
+                <Ref num="27" authors="Goldman D, Oroszi G, Ducci F (2005)" title="The Genetics of Addictions: Uncovering the Genes" journal="Nature Reviews Genetics, 6(7), 521-532" />
+                <Ref num="28" authors="Kranzler HR et al. (2019)" title="Genome-wide Association Study of Alcohol Consumption and Use Disorder in 274,424 Individuals" journal="Nature Communications, 10, 1499" />
+                <Ref num="29" authors="Walters RK et al. (2018)" title="Transancestral GWAS of Alcohol Dependence Reveals Common Genetic Underpinnings with Psychiatric Disorders" journal="Nature Neuroscience, 21(12), 1656-1669" />
+                <Ref num="30" authors="Sanchez-Roige S et al. (2019)" title="Genome-wide Association Study Meta-analysis of the AUDIT in Two Population-based Cohorts" journal="American Journal of Psychiatry, 176(2), 107-118" />
+              </div>
+
+              <p style={{ marginTop: '2rem', fontSize: '0.9rem' }}>All URLs verified April 2026. A full clinical references document with supporting commentary for each source is available on request.</p>
             </div>
           </div>
         </div>
@@ -1023,7 +1205,26 @@
                   <a href="mailto:davidbrand@logicscience.co.uk">davidbrand@logicscience.co.uk</a>
                 </div>
               </div>
-              <p style={{ marginTop: '2.5rem' }}>Headroom is developed by <strong>David Brand</strong>, a data analyst based in Nottingham, UK. A full design document, CGL proposal, and clinical references are available on request.</p>
+              <p style={{ marginTop: '2.5rem' }}>Headroom is developed by <strong>David Brand</strong>, a data analyst based in Nottingham, UK.</p>
+            </div>
+          </div>
+
+          <div className="content-section">
+            <div className="section-inner">
+              <h2>Resources</h2>
+              <p>The following documents are available for download. Additional technical documentation is available on request.</p>
+              <div className="download-grid">
+                <div className="download-card">
+                  <h3>CGL Proposal</h3>
+                  <p>The full proposal submitted to Change Grow Live Nottingham, describing the application, its clinical basis, the opportunity for CGL, and proposed next steps for a collaborative pilot.</p>
+                  <a href="/Headroom-CGL-Proposal.pdf" target="_blank" rel="noopener noreferrer" className="download-link">&#8595; Download PDF</a>
+                </div>
+                <div className="download-card">
+                  <h3>Clinical References</h3>
+                  <p>17 verified peer-reviewed sources underpinning the neuroscientific model, with full citations, URLs, and commentary on what each source supports.</p>
+                  <a href="mailto:davidbrand@logicscience.co.uk?subject=Headroom%20Clinical%20References%20Request" className="download-link">&#9993; Request document</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1062,7 +1263,7 @@
       switch (route) {
         case 'demo': page = <DemoPage />; break;
         case 'about': page = <AboutPage />; break;
-        case 'science': page = <SciencePage />; break;
+        case 'why': page = <WhyPage />; break;
         case 'contact': page = <ContactPage />; break;
         default: page = <LandingPage navigate={navigate} />;
       }
@@ -1074,7 +1275,7 @@
             <ul className="nav-links">
               <li>{navLink('demo', 'Demo')}</li>
               <li>{navLink('about', 'About')}</li>
-              <li>{navLink('science', 'Science')}</li>
+              <li>{navLink('why', 'Why it works')}</li>
               <li>{navLink('contact', 'Contact')}</li>
             </ul>
           </nav>
