@@ -12,9 +12,12 @@ app.use(cookieParser());
 // Trust proxy (Render runs behind a load balancer)
 app.set('trust proxy', 1);
 
-// API routes (mounted before static files)
-// Each route file is loaded as it's built. Uncomment as we go.
-// app.use('/api/auth', require('./routes/auth'));
+// API rate limiting
+const { apiLimiter } = require('./middleware/rate-limit');
+app.use('/api/', apiLimiter);
+
+// API routes
+app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/items', require('./routes/items'));
 // app.use('/api/entries', require('./routes/entries'));
 // app.use('/api/bucket', require('./routes/bucket'));
