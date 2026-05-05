@@ -14,6 +14,6 @@ services:
 
 databases:
   - name: headroom-db
-    plan: starter
+    plan: basic-256mb
     databaseName: headroom
     user: headroom
