@@ -1,15 +1,20 @@
 {
   "name": "headroom",
-  "version": "1.0.0",
-  "description": "Headroom — know your headroom",
+  "version": "2.0.0",
+  "description": "Headroom: know your headroom. Personal psychological load management.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "migrate": "node migrate.js"
   },
   "engines": {
     "node": "20.x"
   },
   "dependencies": {
-    "express": "^4.21.0"
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "pg": "^8.13.0"
   }
 }

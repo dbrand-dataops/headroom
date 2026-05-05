@@ -7,3 +7,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: headroom-db
+          property: connectionString
+
+databases:
+  - name: headroom-db
+    plan: starter
+    databaseName: headroom
+    user: headroom
