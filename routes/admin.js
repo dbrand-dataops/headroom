@@ -19,7 +19,7 @@ router.get('/config', async (req, res) => {
     const result = await query('SELECT key, value FROM config ORDER BY key');
     const config = {};
     for (const row of result.rows) {
-      config[row.key] = JSON.parse(row.value);
+      config[row.key] = row.value;
     }
     return res.json({ config });
   } catch (err) {
