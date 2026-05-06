@@ -18,14 +18,15 @@ app.use('/api/', apiLimiter);
 
 // API routes
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/items', require('./routes/items'));
-// app.use('/api/entries', require('./routes/entries'));
-// app.use('/api/bucket', require('./routes/bucket'));
-// app.use('/api/share', require('./routes/share'));
-// app.use('/api/patterns', require('./routes/patterns'));
-// app.use('/api/admin', require('./routes/admin'));
+app.use('/api/items', require('./routes/items'));
+app.use('/api/onboarding', require('./routes/onboarding'));
+app.use('/api/entries', require('./routes/entries'));
+app.use('/api/bucket', require('./routes/bucket'));
+app.use('/api/share', require('./routes/share'));
+app.use('/api/patterns', require('./routes/patterns'));
+app.use('/api/admin', require('./routes/admin'));
 // app.use('/api/stripe', require('./routes/stripe'));
-// app.use('/api/me', require('./routes/user'));
+app.use('/api/me', require('./routes/user'));
 
 // Serve static files from public/
 app.use(express.static(path.join(__dirname, 'public')));

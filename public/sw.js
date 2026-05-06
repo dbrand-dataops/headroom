@@ -1,4 +1,4 @@
-const CACHE_NAME = 'headroom-v2';
+const CACHE_NAME = 'headroom-v3';
 const SHELL = [
   '/',
   '/manifest.json',
