@@ -60,8 +60,6 @@ CREATE TABLE entries (
 );
 
 CREATE INDEX idx_entries_user_time ON entries (user_id, logged_at DESC);
-CREATE INDEX idx_entries_user_day ON entries (user_id, (logged_at::date));
-
 -- Sessions
 CREATE TABLE sessions (
   id SERIAL PRIMARY KEY,
