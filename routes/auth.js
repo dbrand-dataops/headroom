@@ -63,23 +63,23 @@ router.post('/register', authLimiter, async (req, res) => {
 
     // Determine tier based on signup mode
     const modeRow = await queryOne("SELECT value FROM config WHERE key = 'signup_mode'");
-    const signupMode = modeRow ? JSON.parse(modeRow.value) : 'launch';
+    const signupMode = modeRow ? modeRow.value : 'launch';
 
     let tier = 'free';
     let earlyAdopter = false;
 
     if (signupMode === 'launch') {
       const tierRow = await queryOne("SELECT value FROM config WHERE key = 'launch_tier'");
-      tier = tierRow ? JSON.parse(tierRow.value) : 'full';
+      tier = tierRow ? tierRow.value : 'full';
       earlyAdopter = true;
     } else if (signupMode === 'freemium') {
       const tierRow = await queryOne("SELECT value FROM config WHERE key = 'freemium_tier'");
-      tier = tierRow ? JSON.parse(tierRow.value) : 'free';
+      tier = tierRow ? tierRow.value : 'free';
     }
 
     // Get consent text
     const consentRow = await queryOne("SELECT value FROM config WHERE key = 'registration_consent_text'");
-    const consentText = consentRow ? JSON.parse(consentRow.value) : 'Consent text not configured.';
+    const consentText = consentRow ? consentRow.value : 'Consent text not configured.';
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
