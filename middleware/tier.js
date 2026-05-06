@@ -40,8 +40,8 @@ async function getTierLimits() {
     const maxDays = await queryOne("SELECT value FROM config WHERE key = 'max_history_days_free'");
 
     limitsCache = {
-      maxItemsFree: maxItems ? JSON.parse(maxItems.value) : 5,
-      maxHistoryDaysFree: maxDays ? JSON.parse(maxDays.value) : 7,
+      maxItemsFree: maxItems ? maxItems.value : 5,
+      maxHistoryDaysFree: maxDays ? maxDays.value : 7,
     };
     limitsCacheTime = Date.now();
   } catch (err) {
