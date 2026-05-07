@@ -899,7 +899,15 @@
         window.addEventListener('hashchange', onHash);
         setRoute(getRoute());
         // Check auth on load
-        api('/auth/me').then(d => { setUser(d.user); setAuthChecked(true); }).catch(() => setAuthChecked(true));
+        api('/auth/me').then(d => {
+          setUser(d.user);
+          setAuthChecked(true);
+          // Auto-redirect to app if logged in and on home/root
+          const r = getRoute();
+          if (d.user && (r === 'home' || r === '')) {
+            window.location.hash = '#/app';
+          }
+        }).catch(() => setAuthChecked(true));
         return () => window.removeEventListener('hashchange', onHash);
       }, []);
 

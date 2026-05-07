@@ -1,8 +1,8 @@
 {
   "name": "Headroom",
   "short_name": "Headroom",
-  "description": "Know your headroom — personal psychological load management",
-  "start_url": "/#/demo",
+  "description": "Know your headroom. Personal psychological load management.",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#0f172a",
