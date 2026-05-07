@@ -189,21 +189,35 @@
     .log-entry:hover .delete-btn { opacity: 1; }
     .log-entry .delete-btn:hover { color: var(--coral); }
 
-    /* ITEM MANAGEMENT */
-    .manage-toggle { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; margin-left: auto; border: none; background: none; font-family: var(--font-body); transition: color 0.2s; }
-    .manage-toggle:hover { color: var(--teal); }
-    .item-manage { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.4rem; }
-    .item-manage .lbl-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.6rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; }
+    /* ITEM ROWS (always-visible management like prototype) */
+    .item-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .item-tap { flex: 1; display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; border: 1px solid; user-select: none; }
+    .item-tap.filler { background: var(--bg-card); border-color: rgba(252,129,129,0.15); }
+    .item-tap.filler:hover { background: var(--coral-dim); border-color: rgba(252,129,129,0.3); }
+    .item-tap.emptier { background: var(--bg-card); border-color: rgba(79,209,197,0.15); }
+    .item-tap.emptier:hover { background: var(--teal-dim); border-color: rgba(79,209,197,0.3); }
+    .item-tap.tapped { animation: tapPulse 0.3s ease; }
+    .item-tap .item-label { flex: 1; font-size: 0.92rem; color: var(--text); }
+    .item-tap .item-value { font-size: 0.85rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 4px; font-variant-numeric: tabular-nums; }
+    .item-tap.filler .item-value { color: var(--coral); background: var(--coral-dim); }
+    .item-tap.emptier .item-value { color: var(--teal); background: var(--teal-dim); }
+    .item-edit-btn, .item-rm-btn { background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0.4rem; opacity: 0.25; transition: all 0.2s; color: var(--text-muted); }
+    .item-edit-btn:hover { opacity: 1; color: var(--teal); }
+    .item-rm-btn:hover { opacity: 1; color: var(--coral); }
+    .item-row:hover .item-edit-btn, .item-row:hover .item-rm-btn { opacity: 0.6; }
+    .add-item-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; padding: 0.5rem 1rem; color: var(--text-muted); cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin-top: 0.5rem; transition: all 0.2s; width: 100%; text-align: center; }
+    .add-item-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ITEM EDIT/ADD ROW */
+    .item-manage { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-hover); border-radius: 6px; margin-bottom: 0.5rem; }
+    .item-manage .lbl-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.6rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; }
     .item-manage .lbl-input:focus { border-color: var(--teal); }
-    .item-manage .val-input { width: 55px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.5rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; text-align: center; outline: none; }
+    .item-manage .val-input { width: 55px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.5rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; text-align: center; outline: none; }
     .item-manage .val-input:focus { border-color: var(--teal); }
     .item-manage .rm-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0.2rem; opacity: 0.5; transition: all 0.2s; }
     .item-manage .rm-btn:hover { color: var(--coral); opacity: 1; }
-    .add-item-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-    .add-item-row input { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.6rem; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; outline: none; }
-    .add-item-row input:focus { border-color: var(--teal); }
-    .add-item-row .add-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.8rem; color: var(--teal); cursor: pointer; font-size: 0.85rem; font-family: var(--font-body); transition: all 0.2s; }
-    .add-item-row .add-btn:hover { border-color: var(--teal); }
+    .item-manage .add-btn { background: none; border: 1px solid var(--teal); border-radius: 4px; padding: 0.35rem 0.75rem; color: var(--teal); cursor: pointer; font-size: 0.85rem; font-family: var(--font-body); transition: all 0.2s; }
+    .item-manage .add-btn:hover { background: var(--teal-dim); }
 
     /* ANIMATIONS */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
@@ -399,7 +413,7 @@
             ...data.emptiers.map((e,i) => ({ ...e, type: 'emptier', key: `e${i}` })),
           ];
           setStarters(all);
-          setSelected(new Set(all.map(a => a.key)));
+          // Start with nothing selected. User taps to include.
         });
       }, []);
 
@@ -407,10 +421,18 @@
         setSelected(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
       };
 
+      const selectAll = (type) => {
+        setSelected(prev => {
+          const n = new Set(prev);
+          starters.filter(s => s.type === type).forEach(s => n.add(s.key));
+          return n;
+        });
+      };
+
       const handleComplete = async () => {
         const items = starters.filter(s => selected.has(s.key)).map(s => ({ label: s.label, type: s.type, defaultValue: s.defaultValue }));
         if (items.filter(i=>i.type==='filler').length === 0 || items.filter(i=>i.type==='emptier').length === 0) {
-          setError('You need at least one load item and one relief item.'); return;
+          setError('Select at least one from each group.'); return;
         }
         setLoading(true); setError('');
         try {
@@ -422,27 +444,28 @@
       if (!starters) return <div className="loading">Loading...</div>;
       const fillers = starters.filter(s => s.type === 'filler');
       const emptiers = starters.filter(s => s.type === 'emptier');
+      const selCount = selected.size;
       return (
         <div className="onboarding-page"><div className="onboarding-card">
-          <h1>Set up your items</h1>
-          <p className="subtitle">These are the stressors that fill your bucket and the actions that drain it. Tap to deselect any that don't apply. You can customise them later.</p>
+          <h1>Choose your items</h1>
+          <p className="subtitle">Tap each item that applies to you. These are the stressors that fill your bucket and the actions that drain it. You can add, edit, or remove them at any time.</p>
           {error && <div className="alert alert-error">{error}</div>}
-          <div className="item-group fillers"><h3><span className="dot"></span> Load (stressors)</h3>
+          <div className="item-group fillers"><h3><span className="dot"></span> What fills your bucket? <button className="manage-toggle" onClick={()=>selectAll('filler')} style={{marginLeft:'auto',background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer',fontSize:'0.8rem'}}>Select all</button></h3>
             <div className="onboard-items">{fillers.map(f => (
               <div key={f.key} className={`onboard-item filler ${selected.has(f.key)?'selected':'deselected'}`} onClick={()=>toggle(f.key)}>
                 {f.label} <span className="val">+{f.defaultValue}</span>
               </div>
             ))}</div>
           </div>
-          <div className="item-group emptiers"><h3><span className="dot"></span> Relief (actions)</h3>
+          <div className="item-group emptiers"><h3><span className="dot"></span> What helps bring it down? <button className="manage-toggle" onClick={()=>selectAll('emptier')} style={{marginLeft:'auto',background:'none',border:'none',color:'var(--text-muted)',cursor:'pointer',fontSize:'0.8rem'}}>Select all</button></h3>
             <div className="onboard-items">{emptiers.map(e => (
               <div key={e.key} className={`onboard-item emptier ${selected.has(e.key)?'selected':'deselected'}`} onClick={()=>toggle(e.key)}>
                 {e.label} <span className="val">-{e.defaultValue}</span>
               </div>
             ))}</div>
           </div>
-          <button className="btn-primary" onClick={handleComplete} disabled={loading} style={{marginTop:'1.5rem'}}>
-            {loading ? 'Setting up...' : `Continue with ${selected.size} items`}
+          <button className="btn-primary" onClick={handleComplete} disabled={loading || selCount === 0} style={{marginTop:'1.5rem'}}>
+            {loading ? 'Setting up...' : selCount === 0 ? 'Select items to continue' : `Continue with ${selCount} items`}
           </button>
         </div></div>
       );
@@ -457,10 +480,10 @@
       const [todayEntries, setTodayEntries] = useState([]);
       const [tapped, setTapped] = useState(null);
       const [loading, setLoading] = useState(true);
-      const [managing, setManaging] = useState(false);
-      const [newLabel, setNewLabel] = useState('');
-      const [newVal, setNewVal] = useState(10);
-      const [newType, setNewType] = useState('filler');
+      const [editing, setEditing] = useState(null); // item id being edited
+      const [adding, setAdding] = useState(null); // 'filler' or 'emptier'
+      const [addLabel, setAddLabel] = useState('');
+      const [addVal, setAddVal] = useState(10);
       const logRef = useRef(null);
 
       const load = useCallback(async () => {
@@ -473,7 +496,7 @@
       useEffect(() => { load(); }, [load]);
 
       const handleTap = async (item) => {
-        if (managing) return;
+        if (editing === item.id) return;
         try {
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id } });
           setLevel(data.level);
@@ -485,26 +508,17 @@
 
       const handleDeleteEntry = async (entryId) => {
         try {
-          const data = await api(`/entries/${entryId}`, { method: 'DELETE' });
-          setTodayEntries(prev => prev.filter(e => e.id !== entryId));
-          // Reload to get correct levels
+          await api(`/entries/${entryId}`, { method: 'DELETE' });
           const [b, te] = await Promise.all([api('/bucket'), api('/entries/today')]);
           setLevel(b.level); setTodayEntries(te.entries);
         } catch(e) { console.error(e); }
       };
 
-      const handleEditItem = async (itemId, field, value) => {
+      const handleEditItem = async (itemId, label, val) => {
         try {
-          const body = {};
-          if (field === 'label') body.label = value;
-          if (field === 'defaultValue') body.defaultValue = parseInt(value);
-          await api(`/items/${itemId}`, { method: 'PUT', body });
-          setItems(prev => prev.map(i => {
-            if (i.id !== itemId) return i;
-            if (field === 'label') return { ...i, label: value };
-            if (field === 'defaultValue') return { ...i, default_value: parseInt(value) };
-            return i;
-          }));
+          await api(`/items/${itemId}`, { method: 'PUT', body: { label, defaultValue: parseInt(val) } });
+          setItems(prev => prev.map(i => i.id === itemId ? { ...i, label, default_value: parseInt(val) } : i));
+          setEditing(null);
         } catch(e) { console.error(e); }
       };
 
@@ -516,11 +530,11 @@
       };
 
       const handleAddItem = async (type) => {
-        if (!newLabel.trim()) return;
+        if (!addLabel.trim()) return;
         try {
-          const data = await api('/items', { method: 'POST', body: { label: newLabel.trim(), type, defaultValue: newVal } });
+          const data = await api('/items', { method: 'POST', body: { label: addLabel.trim(), type, defaultValue: addVal } });
           setItems(prev => [...prev, data.item]);
-          setNewLabel(''); setNewVal(10);
+          setAddLabel(''); setAddVal(10); setAdding(null);
         } catch(e) { alert(e.message); }
       };
 
@@ -531,31 +545,49 @@
       const displayEntries = [...todayEntries].reverse();
       const formatTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-      const renderItemGroup = (groupItems, type) => {
-        if (!managing) {
+      const ItemRow = ({ item, type }) => {
+        const [editLabel, setEditLabel] = useState(item.label);
+        const [editVal, setEditVal] = useState(item.default_value);
+        const isEditing = editing === item.id;
+
+        if (isEditing) {
           return (
-            <div className="items-grid">{groupItems.map(item => (
-              <button key={item.id} className={`item-btn ${type}${tapped===item.id?' tapped':''}`} onClick={()=>handleTap(item)}>
-                {item.label}<span className="impact">{type==='filler'?'+':'-'}{item.default_value}</span>
-              </button>
-            ))}</div>
+            <div className="item-manage">
+              <input className="lbl-input" value={editLabel} onChange={e=>setEditLabel(e.target.value)} autoFocus />
+              <input className="val-input" type="number" min="1" max="50" value={editVal} onChange={e=>setEditVal(parseInt(e.target.value)||1)} />
+              <button className="add-btn" onClick={()=>handleEditItem(item.id, editLabel, editVal)}>Save</button>
+              <button className="rm-btn" onClick={()=>setEditing(null)}>&#x2715;</button>
+            </div>
           );
         }
-        return (<div>
-          {groupItems.map(item => (
-            <div className="item-manage" key={item.id}>
-              <input className="lbl-input" defaultValue={item.label} onBlur={e => { if (e.target.value !== item.label) handleEditItem(item.id, 'label', e.target.value); }} />
-              <input className="val-input" type="number" min="1" max="50" defaultValue={item.default_value} onBlur={e => { if (parseInt(e.target.value) !== item.default_value) handleEditItem(item.id, 'defaultValue', e.target.value); }} />
-              <button className="rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
+
+        return (
+          <div className={`item-row ${type}`}>
+            <div className={`item-tap ${type}${tapped===item.id?' tapped':''}`} onClick={()=>handleTap(item)}>
+              <span className="item-label">{item.label}</span>
+              <span className="item-value">{type==='filler'?'+':'-'}{item.default_value}</span>
             </div>
-          ))}
-          <div className="add-item-row">
-            <input placeholder={`New ${type==='filler'?'stressor':'relief'}...`} value={newType===type?newLabel:''} onFocus={()=>setNewType(type)} onChange={e=>setNewLabel(e.target.value)} style={{flex:1}} />
-            <input className="val-input" type="number" min="1" max="50" value={newType===type?newVal:10} onFocus={()=>setNewType(type)} onChange={e=>setNewVal(parseInt(e.target.value)||10)} style={{width:'55px'}} />
-            <button className="add-btn" onClick={()=>handleAddItem(type)}>Add</button>
+            <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Edit">&#x270E;</button>
+            <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
           </div>
-        </div>);
+        );
       };
+
+      const renderGroup = (groupItems, type) => (
+        <div>
+          {groupItems.map(item => <ItemRow key={item.id} item={item} type={type} />)}
+          {adding === type ? (
+            <div className="item-manage" style={{marginTop:'0.5rem'}}>
+              <input className="lbl-input" placeholder={type==='filler'?'New stressor...':'New relief...'} value={addLabel} onChange={e=>setAddLabel(e.target.value)} autoFocus />
+              <input className="val-input" type="number" min="1" max="50" value={addVal} onChange={e=>setAddVal(parseInt(e.target.value)||1)} />
+              <button className="add-btn" onClick={()=>handleAddItem(type)}>Add</button>
+              <button className="rm-btn" onClick={()=>{setAdding(null);setAddLabel('');setAddVal(10);}}>&#x2715;</button>
+            </div>
+          ) : (
+            <button className="add-item-btn" onClick={()=>{setAdding(type);setAddLabel('');setAddVal(10);}}>+ add</button>
+          )}
+        </div>
+      );
 
       return (
         <div className="app-layout">
@@ -568,14 +600,17 @@
             </div>
           </div>
           <div className="items-panel">
-            <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'-0.5rem'}}>
-              <button className="manage-toggle" onClick={()=>setManaging(!managing)}>{managing ? 'Done' : 'Manage items'}</button>
-            </div>
+            {todayEntries.length === 0 && level === 0 && (
+              <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'1.5rem'}}>
+                <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
+                <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by tapping the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now: work pressure, poor sleep, whatever you carry. Your level will rise. Then through the day, tap <strong style={{color:'var(--teal)'}}>relief</strong> items as you do them: exercise, rest, conversation. Watch the level come down. The space between your level and the top is your headroom.</p>
+              </div>
+            )}
             <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
-              {renderItemGroup(fillers, 'filler')}
+              {renderGroup(fillers, 'filler')}
             </div>
             <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
-              {renderItemGroup(emptiers, 'emptier')}
+              {renderGroup(emptiers, 'emptier')}
             </div>
             {todayEntries.length > 0 && (
               <div className="history-section"><h3>Today</h3>
@@ -684,7 +719,7 @@
         try { await api('/auth/password', { method: 'PUT', body: { currentPassword: curPw, newPassword: newPw } }); setMsg('Password changed.'); setCurPw(''); setNewPw(''); } catch(e) { setError(e.message); }
       };
       const createShare = async () => {
-        try { const d = await api('/share', { method: 'POST', body: { label: shareLabel || 'Shared view' } }); setShares(prev => [d.share, ...prev]); setShareLabel(''); } catch(e) { setError(e.message); }
+        try { const d = await api('/share', { method: 'POST', body: { label: shareLabel || 'Shared view' } }); setShares(prev => [{...d.share, active: true}, ...prev]); setShareLabel(''); } catch(e) { setError(e.message); }
       };
       const revokeShare = async (id) => {
         try { await api(`/share/${id}`, { method: 'DELETE' }); setShares(prev => prev.map(s => s.id===id ? {...s, active:false, revokedAt:new Date().toISOString()} : s)); } catch(e) { setError(e.message); }
@@ -811,18 +846,37 @@
       if (error) return <div className="auth-page"><div className="auth-card"><h1>Not found</h1><p className="subtitle">{error}</p></div></div>;
       if (!data) return <div className="loading">Loading shared view...</div>;
       const col = levelColor(data.level);
+      const fmtTime = (ts) => { const d = new Date(ts); const diff = Math.floor((Date.now()-d)/864e5); const t = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); if(diff===0) return t; if(diff===1) return 'yday '+t; return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+t; };
+      const sortedEntries = [...data.entries].sort((a,b) => new Date(b.loggedAt) - new Date(a.loggedAt));
+      const chartEntries = [...data.entries].sort((a,b) => new Date(a.loggedAt) - new Date(b.loggedAt));
       return (
         <div className="app-page" style={{paddingTop:'90px'}}>
-          <div style={{textAlign:'center',marginBottom:'2rem'}}>
-            <div style={{fontSize:'0.85rem',color:'var(--text-muted)',marginBottom:'0.5rem'}}>{data.shareLabel} / {data.displayName}</div>
-            <BucketSVG level={data.level} size={0.9} />
-            <div className="level-reading" style={{color:col.main,marginTop:'0.5rem'}}>{data.level}%</div>
-            <div className="level-label">{data.word}</div>
-            <div className="headroom-reading">{data.headroom}% headroom</div>
+          <div style={{maxWidth:'700px',margin:'0 auto',padding:'0 2rem'}}>
+            <div style={{textAlign:'center',marginBottom:'2rem'}}>
+              <div style={{fontSize:'0.85rem',color:'var(--text-muted)',marginBottom:'0.5rem'}}>{data.shareLabel}: {data.displayName}</div>
+              <BucketSVG level={data.level} size={0.9} />
+              <div className="level-reading" style={{color:col.main,marginTop:'0.5rem'}}>{data.level}%</div>
+              <div className="level-label">{data.word}</div>
+              <div className="headroom-reading">{data.headroom}% headroom</div>
+            </div>
+            {chartEntries.length > 1 && (
+              <div><h3 style={{fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1.05rem',color:'var(--text-bright)',marginBottom:'1rem'}}>Last 7 days</h3>
+                <HistoryChart entries={chartEntries} />
+              </div>
+            )}
+            {sortedEntries.length > 0 && (
+              <div style={{display:'flex',flexDirection:'column',gap:'0.35rem',maxHeight:'400px',overflowY:'auto',marginTop:'1rem'}}>
+                {sortedEntries.map(e => (
+                  <div className="log-entry" key={e.id}>
+                    <span className="time" style={{minWidth:'80px'}}>{fmtTime(e.loggedAt)}</span>
+                    <span className="label">{e.label}</span>
+                    <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
+                    <span className="level-after">{e.levelAfter}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          {data.entries.length > 1 && <div style={{maxWidth:'600px',margin:'0 auto',padding:'0 2rem'}}>
-            <HistoryChart entries={[...data.entries].reverse()} />
-          </div>}
         </div>
       );
     }

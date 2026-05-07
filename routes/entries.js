@@ -191,16 +191,16 @@ router.delete('/:id', async (req, res) => {
 
 
 // ── Helper: get current bucket level ──
-// Returns the level_after of the most recent entry today, or 0 if none
+// Returns the level_after of the most recent entry, regardless of date.
+// The bucket does not reset at midnight. Stressors persist until acted on.
 async function getCurrentLevel(userId, timezone) {
   const latest = await queryOne(
     `SELECT level_after
      FROM entries
      WHERE user_id = $1
-       AND logged_at::date = (NOW() AT TIME ZONE $2)::date
      ORDER BY logged_at DESC
      LIMIT 1`,
-    [userId, timezone]
+    [userId]
   );
 
   return latest ? latest.level_after : 0;
