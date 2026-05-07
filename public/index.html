@@ -184,6 +184,27 @@
     /* LOADING */
     .loading { display: flex; align-items: center; justify-content: center; padding: 4rem; color: var(--text-muted); font-style: italic; }
 
+    /* ENTRY DELETE */
+    .log-entry .delete-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 0.2rem 0.4rem; opacity: 0.3; transition: all 0.2s; }
+    .log-entry:hover .delete-btn { opacity: 1; }
+    .log-entry .delete-btn:hover { color: var(--coral); }
+
+    /* ITEM MANAGEMENT */
+    .manage-toggle { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; margin-left: auto; border: none; background: none; font-family: var(--font-body); transition: color 0.2s; }
+    .manage-toggle:hover { color: var(--teal); }
+    .item-manage { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.4rem; }
+    .item-manage .lbl-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.6rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; outline: none; }
+    .item-manage .lbl-input:focus { border-color: var(--teal); }
+    .item-manage .val-input { width: 55px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.35rem 0.5rem; color: var(--text); font-family: var(--font-body); font-size: 0.88rem; text-align: center; outline: none; }
+    .item-manage .val-input:focus { border-color: var(--teal); }
+    .item-manage .rm-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0.2rem; opacity: 0.5; transition: all 0.2s; }
+    .item-manage .rm-btn:hover { color: var(--coral); opacity: 1; }
+    .add-item-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .add-item-row input { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.6rem; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; outline: none; }
+    .add-item-row input:focus { border-color: var(--teal); }
+    .add-item-row .add-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.8rem; color: var(--teal); cursor: pointer; font-size: 0.85rem; font-family: var(--font-body); transition: all 0.2s; }
+    .add-item-row .add-btn:hover { border-color: var(--teal); }
+
     /* ANIMATIONS */
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -436,6 +457,10 @@
       const [todayEntries, setTodayEntries] = useState([]);
       const [tapped, setTapped] = useState(null);
       const [loading, setLoading] = useState(true);
+      const [managing, setManaging] = useState(false);
+      const [newLabel, setNewLabel] = useState('');
+      const [newVal, setNewVal] = useState(10);
+      const [newType, setNewType] = useState('filler');
       const logRef = useRef(null);
 
       const load = useCallback(async () => {
@@ -448,6 +473,7 @@
       useEffect(() => { load(); }, [load]);
 
       const handleTap = async (item) => {
+        if (managing) return;
         try {
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id } });
           setLevel(data.level);
@@ -457,12 +483,79 @@
         } catch(e) { console.error(e); }
       };
 
+      const handleDeleteEntry = async (entryId) => {
+        try {
+          const data = await api(`/entries/${entryId}`, { method: 'DELETE' });
+          setTodayEntries(prev => prev.filter(e => e.id !== entryId));
+          // Reload to get correct levels
+          const [b, te] = await Promise.all([api('/bucket'), api('/entries/today')]);
+          setLevel(b.level); setTodayEntries(te.entries);
+        } catch(e) { console.error(e); }
+      };
+
+      const handleEditItem = async (itemId, field, value) => {
+        try {
+          const body = {};
+          if (field === 'label') body.label = value;
+          if (field === 'defaultValue') body.defaultValue = parseInt(value);
+          await api(`/items/${itemId}`, { method: 'PUT', body });
+          setItems(prev => prev.map(i => {
+            if (i.id !== itemId) return i;
+            if (field === 'label') return { ...i, label: value };
+            if (field === 'defaultValue') return { ...i, default_value: parseInt(value) };
+            return i;
+          }));
+        } catch(e) { console.error(e); }
+      };
+
+      const handleRemoveItem = async (itemId) => {
+        try {
+          await api(`/items/${itemId}`, { method: 'DELETE' });
+          setItems(prev => prev.filter(i => i.id !== itemId));
+        } catch(e) { console.error(e); }
+      };
+
+      const handleAddItem = async (type) => {
+        if (!newLabel.trim()) return;
+        try {
+          const data = await api('/items', { method: 'POST', body: { label: newLabel.trim(), type, defaultValue: newVal } });
+          setItems(prev => [...prev, data.item]);
+          setNewLabel(''); setNewVal(10);
+        } catch(e) { alert(e.message); }
+      };
+
       if (loading) return <div className="loading">Loading your bucket...</div>;
       const col = levelColor(level);
       const fillers = items.filter(i => i.type === 'filler');
       const emptiers = items.filter(i => i.type === 'emptier');
       const displayEntries = [...todayEntries].reverse();
       const formatTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+      const renderItemGroup = (groupItems, type) => {
+        if (!managing) {
+          return (
+            <div className="items-grid">{groupItems.map(item => (
+              <button key={item.id} className={`item-btn ${type}${tapped===item.id?' tapped':''}`} onClick={()=>handleTap(item)}>
+                {item.label}<span className="impact">{type==='filler'?'+':'-'}{item.default_value}</span>
+              </button>
+            ))}</div>
+          );
+        }
+        return (<div>
+          {groupItems.map(item => (
+            <div className="item-manage" key={item.id}>
+              <input className="lbl-input" defaultValue={item.label} onBlur={e => { if (e.target.value !== item.label) handleEditItem(item.id, 'label', e.target.value); }} />
+              <input className="val-input" type="number" min="1" max="50" defaultValue={item.default_value} onBlur={e => { if (parseInt(e.target.value) !== item.default_value) handleEditItem(item.id, 'defaultValue', e.target.value); }} />
+              <button className="rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
+            </div>
+          ))}
+          <div className="add-item-row">
+            <input placeholder={`New ${type==='filler'?'stressor':'relief'}...`} value={newType===type?newLabel:''} onFocus={()=>setNewType(type)} onChange={e=>setNewLabel(e.target.value)} style={{flex:1}} />
+            <input className="val-input" type="number" min="1" max="50" value={newType===type?newVal:10} onFocus={()=>setNewType(type)} onChange={e=>setNewVal(parseInt(e.target.value)||10)} style={{width:'55px'}} />
+            <button className="add-btn" onClick={()=>handleAddItem(type)}>Add</button>
+          </div>
+        </div>);
+      };
 
       return (
         <div className="app-layout">
@@ -475,19 +568,14 @@
             </div>
           </div>
           <div className="items-panel">
+            <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'-0.5rem'}}>
+              <button className="manage-toggle" onClick={()=>setManaging(!managing)}>{managing ? 'Done' : 'Manage items'}</button>
+            </div>
             <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
-              <div className="items-grid">{fillers.map(item => (
-                <button key={item.id} className={`item-btn filler${tapped===item.id?' tapped':''}`} onClick={()=>handleTap(item)}>
-                  {item.label}<span className="impact">+{item.default_value}</span>
-                </button>
-              ))}</div>
+              {renderItemGroup(fillers, 'filler')}
             </div>
             <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
-              <div className="items-grid">{emptiers.map(item => (
-                <button key={item.id} className={`item-btn emptier${tapped===item.id?' tapped':''}`} onClick={()=>handleTap(item)}>
-                  {item.label}<span className="impact">-{item.default_value}</span>
-                </button>
-              ))}</div>
+              {renderItemGroup(emptiers, 'emptier')}
             </div>
             {todayEntries.length > 0 && (
               <div className="history-section"><h3>Today</h3>
@@ -499,6 +587,7 @@
                       <span className="label">{e.label}</span>
                       <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
                       <span className="level-after">{e.levelAfter}%</span>
+                      <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
                     </div>
                   ))}
                 </div></div>
@@ -516,6 +605,9 @@
       const [entries, setEntries] = useState([]); const [days, setDays] = useState(7); const [loading, setLoading] = useState(true);
       const load = async (d) => { setLoading(true); try { const data = await api(`/entries?days=${d}`); setEntries(data.entries); } catch(e){} finally { setLoading(false); } };
       useEffect(() => { load(days); }, [days]);
+      const handleDelete = async (id) => {
+        try { await api(`/entries/${id}`, { method: 'DELETE' }); load(days); } catch(e) { console.error(e); }
+      };
       const fmtTime = (ts) => { const d = new Date(ts); return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); };
       return (
         <div className="app-content">
@@ -532,6 +624,7 @@
                   <span className="label">{e.label}</span>
                   <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
                   <span className="level-after">{e.levelAfter}%</span>
+                  <button className="delete-btn" onClick={()=>handleDelete(e.id)} title="Delete">&#x2715;</button>
                 </div>
               ))}
             </div>

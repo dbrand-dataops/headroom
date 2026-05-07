@@ -141,6 +141,55 @@ router.get('/today', async (req, res) => {
 });
 
 
+// ── DELETE /api/entries/:id ──
+// Delete an entry and recalculate all subsequent levels
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verify ownership and get the entry
+    const entry = await queryOne(
+      'SELECT id, user_id, logged_at FROM entries WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+    if (!entry) {
+      return res.status(404).json({ error: 'Entry not found.' });
+    }
+
+    // Get all entries after this one (same day, for recalculation)
+    const subsequent = await query(
+      `SELECT id, value FROM entries
+       WHERE user_id = $1 AND logged_at > $2
+       ORDER BY logged_at ASC`,
+      [req.user.id, entry.logged_at]
+    );
+
+    // Get the level before the deleted entry
+    const prior = await queryOne(
+      `SELECT level_after FROM entries
+       WHERE user_id = $1 AND logged_at < $2
+       ORDER BY logged_at DESC LIMIT 1`,
+      [req.user.id, entry.logged_at]
+    );
+    let runningLevel = prior ? prior.level_after : 0;
+
+    // Delete the entry
+    await query('DELETE FROM entries WHERE id = $1', [id]);
+
+    // Recalculate all subsequent entries
+    for (const sub of subsequent.rows) {
+      runningLevel = Math.max(0, Math.min(100, runningLevel + sub.value));
+      await query('UPDATE entries SET level_after = $1 WHERE id = $2', [runningLevel, sub.id]);
+    }
+
+    return res.json({ ok: true, level: runningLevel });
+  } catch (err) {
+    console.error('Delete entry error:', err.message);
+    return res.status(500).json({ error: 'Failed to delete entry.' });
+  }
+});
+
+
 // ── Helper: get current bucket level ──
 // Returns the level_after of the most recent entry today, or 0 if none
 async function getCurrentLevel(userId, timezone) {
