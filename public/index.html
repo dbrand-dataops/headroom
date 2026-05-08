@@ -710,6 +710,7 @@
     function AppSettings({ user, onLogout }) {
       const [msg, setMsg] = useState(''); const [error, setError] = useState('');
       const [shares, setShares] = useState([]); const [shareLabel, setShareLabel] = useState('');
+      const [newSettings, setNewSettings] = useState({ showChart: true, showLog: true, showItemLabels: true });
       const [curPw, setCurPw] = useState(''); const [newPw, setNewPw] = useState('');
 
       useEffect(() => { api('/share').then(d => setShares(d.shares)).catch(()=>{}); }, []);
@@ -719,13 +720,36 @@
         try { await api('/auth/password', { method: 'PUT', body: { currentPassword: curPw, newPassword: newPw } }); setMsg('Password changed.'); setCurPw(''); setNewPw(''); } catch(e) { setError(e.message); }
       };
       const createShare = async () => {
-        try { const d = await api('/share', { method: 'POST', body: { label: shareLabel || 'Shared view' } }); setShares(prev => [{...d.share, active: true}, ...prev]); setShareLabel(''); } catch(e) { setError(e.message); }
+        try {
+          const d = await api('/share', { method: 'POST', body: { label: shareLabel || 'Shared view', settings: newSettings } });
+          setShares(prev => [d.share, ...prev]);
+          setShareLabel('');
+        } catch(e) { setError(e.message); }
       };
       const revokeShare = async (id) => {
-        try { await api(`/share/${id}`, { method: 'DELETE' }); setShares(prev => prev.map(s => s.id===id ? {...s, active:false, revokedAt:new Date().toISOString()} : s)); } catch(e) { setError(e.message); }
+        try { await api(`/share/${id}`, { method: 'DELETE' }); setShares(prev => prev.map(s => s.id===id ? {...s, active:false} : s)); } catch(e) { setError(e.message); }
+      };
+      const toggleShareSetting = async (id, key) => {
+        const share = shares.find(s => s.id === id);
+        if (!share) return;
+        const current = share.settings || { showChart: true, showLog: true, showItemLabels: true };
+        const updated = { ...current, [key]: !current[key] };
+        try {
+          await api(`/share/${id}`, { method: 'PUT', body: { settings: updated } });
+          setShares(prev => prev.map(s => s.id === id ? { ...s, settings: updated } : s));
+        } catch(e) { setError(e.message); }
       };
       const exportData = () => { window.open('/api/me/export', '_blank'); };
       const handleLogout = async () => { await api('/auth/logout', { method: 'POST' }).catch(()=>{}); onLogout(); };
+
+      const Toggle = ({ on, onClick, label }) => (
+        <label style={{display:'flex',alignItems:'center',gap:'0.5rem',cursor:'pointer',fontSize:'0.85rem',color: on ? 'var(--teal)' : 'var(--text-muted)'}}>
+          <span onClick={onClick} style={{width:'36px',height:'20px',borderRadius:'10px',background: on ? 'var(--teal-deep)' : 'var(--bg-elevated)',position:'relative',display:'inline-block',transition:'background 0.2s',border:'1px solid',borderColor: on ? 'var(--teal)' : 'var(--border)'}}>
+            <span style={{position:'absolute',top:'2px',left: on ? '17px' : '2px',width:'14px',height:'14px',borderRadius:'50%',background: on ? 'var(--teal)' : 'var(--text-muted)',transition:'left 0.2s'}}></span>
+          </span>
+          {label}
+        </label>
+      );
 
       return (
         <div className="app-content">
@@ -747,17 +771,33 @@
           </div>
 
           <div className="settings-section"><h3>Share links</h3>
-            <p style={{color:'var(--text-muted)',fontSize:'0.9rem',marginBottom:'1rem'}}>Share a read-only view of your bucket with a keyworker, supporter, or anyone you choose.</p>
-            <div style={{display:'flex',gap:'0.75rem',marginBottom:'1rem'}}>
+            <p style={{color:'var(--text-muted)',fontSize:'0.9rem',marginBottom:'1rem'}}>Share a read-only view of your bucket. Choose what each viewer can see.</p>
+            <div style={{display:'flex',gap:'0.75rem',marginBottom:'0.75rem'}}>
               <input placeholder="Label (e.g. My keyworker)" value={shareLabel} onChange={e=>setShareLabel(e.target.value)} style={{flex:1,padding:'0.5rem 0.75rem',background:'var(--bg)',border:'1px solid var(--border)',borderRadius:'6px',color:'var(--text)',fontFamily:'var(--font-body)'}} />
               <button className="btn-secondary" onClick={createShare}>Create link</button>
             </div>
-            {shares.filter(s=>s.active).map(s => (
-              <div className="share-item" key={s.id}>
-                <div style={{flex:1}}><div className="share-label">{s.label}</div><div className="share-url">{s.url}</div></div>
-                <button className="btn-danger" onClick={()=>revokeShare(s.id)} style={{fontSize:'0.8rem',padding:'0.4rem 0.8rem'}}>Revoke</button>
-              </div>
-            ))}
+            <div style={{display:'flex',gap:'1.25rem',marginBottom:'1.25rem',flexWrap:'wrap'}}>
+              <Toggle on={newSettings.showChart} onClick={()=>setNewSettings(p=>({...p,showChart:!p.showChart}))} label="Chart" />
+              <Toggle on={newSettings.showLog} onClick={()=>setNewSettings(p=>({...p,showLog:!p.showLog}))} label="History log" />
+              <Toggle on={newSettings.showItemLabels} onClick={()=>setNewSettings(p=>({...p,showItemLabels:!p.showItemLabels}))} label="Item names" />
+            </div>
+
+            {shares.filter(s=>s.active).map(s => {
+              const st = s.settings || { showChart: true, showLog: true, showItemLabels: true };
+              return (
+                <div className="share-item" key={s.id} style={{flexDirection:'column',alignItems:'stretch',gap:'0.75rem'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+                    <div style={{flex:1}}><div className="share-label">{s.label}</div><div className="share-url">{s.url}</div></div>
+                    <button className="btn-danger" onClick={()=>revokeShare(s.id)} style={{fontSize:'0.8rem',padding:'0.4rem 0.8rem'}}>Revoke</button>
+                  </div>
+                  <div style={{display:'flex',gap:'1rem',flexWrap:'wrap'}}>
+                    <Toggle on={st.showChart} onClick={()=>toggleShareSetting(s.id,'showChart')} label="Chart" />
+                    <Toggle on={st.showLog} onClick={()=>toggleShareSetting(s.id,'showLog')} label="Log" />
+                    <Toggle on={st.showItemLabels} onClick={()=>toggleShareSetting(s.id,'showItemLabels')} label="Names" />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="settings-section"><h3>Your data</h3>
@@ -846,9 +886,10 @@
       if (error) return <div className="auth-page"><div className="auth-card"><h1>Not found</h1><p className="subtitle">{error}</p></div></div>;
       if (!data) return <div className="loading">Loading shared view...</div>;
       const col = levelColor(data.level);
+      const s = data.settings || { showChart: true, showLog: true, showItemLabels: true };
       const fmtTime = (ts) => { const d = new Date(ts); const diff = Math.floor((Date.now()-d)/864e5); const t = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); if(diff===0) return t; if(diff===1) return 'yday '+t; return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+t; };
-      const sortedEntries = [...data.entries].sort((a,b) => new Date(b.loggedAt) - new Date(a.loggedAt));
       const chartEntries = [...data.entries].sort((a,b) => new Date(a.loggedAt) - new Date(b.loggedAt));
+      const logEntries = [...data.entries].sort((a,b) => new Date(b.loggedAt) - new Date(a.loggedAt));
       return (
         <div className="app-page" style={{paddingTop:'90px'}}>
           <div style={{maxWidth:'700px',margin:'0 auto',padding:'0 2rem'}}>
@@ -859,14 +900,14 @@
               <div className="level-label">{data.word}</div>
               <div className="headroom-reading">{data.headroom}% headroom</div>
             </div>
-            {chartEntries.length > 1 && (
+            {s.showChart && chartEntries.length > 1 && (
               <div><h3 style={{fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1.05rem',color:'var(--text-bright)',marginBottom:'1rem'}}>Last 7 days</h3>
                 <HistoryChart entries={chartEntries} />
               </div>
             )}
-            {sortedEntries.length > 0 && (
+            {s.showLog && logEntries.length > 0 && (
               <div style={{display:'flex',flexDirection:'column',gap:'0.35rem',maxHeight:'400px',overflowY:'auto',marginTop:'1rem'}}>
-                {sortedEntries.map(e => (
+                {logEntries.map(e => (
                   <div className="log-entry" key={e.id}>
                     <span className="time" style={{minWidth:'80px'}}>{fmtTime(e.loggedAt)}</span>
                     <span className="label">{e.label}</span>
