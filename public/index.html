@@ -346,7 +346,7 @@
     // HISTORY CHART
     // ═══════════════════════════════════════
     function HistoryChart({ entries }) {
-      if (!entries || entries.length < 2) return null;
+      if (!entries || entries.length < 1) return null;
       const W = 520, H = 140, PAD = { t: 10, r: 15, b: 25, l: 35 };
       const plotW = W - PAD.l - PAD.r, plotH = H - PAD.t - PAD.b;
       const pts = entries.map(e => ({ t: new Date(e.loggedAt || e.logged_at || e.ts).getTime(), level: e.levelAfter ?? e.level_after ?? e.level }));
@@ -765,13 +765,17 @@
       useEffect(() => { load(days); }, [days]);
       if (loading) return <div className="loading">Computing patterns...</div>;
       if (!data) return <div className="app-content"><p>No data yet.</p></div>;
-      const maxFiller = Math.max(...data.topFillers.map(f=>f.count), 1);
-      const maxEmptier = Math.max(...data.topEmptiers.map(e=>e.count), 1);
+      const fillersSorted = [...data.topFillers].sort((a,b) => b.count - a.count);
+      const emptiersSorted = [...data.topEmptiers].sort((a,b) => b.count - a.count);
+      const maxFiller = Math.max(...fillersSorted.map(f=>f.count), 1);
+      const maxEmptier = Math.max(...emptiersSorted.map(e=>e.count), 1);
 
       const byDay = data.byDayOfWeek || [];
       const maxDay = Math.max(...byDay.map(d=>d.entries||0), 1);
       const byHour = data.byHour || [];
       const maxHour = Math.max(...byHour.map(h=>h.entries||0), 1);
+
+      const lvlColor = (lvl) => lvl > 70 ? 'var(--coral)' : lvl > 40 ? 'var(--amber)' : 'var(--teal)';
 
       return (
         <div className="app-content">
@@ -787,12 +791,12 @@
           </div>
           <div className="patterns-grid">
             <div className="pattern-card"><h4>Top load sources</h4>
-              {data.topFillers.map(f => (
+              {fillersSorted.map(f => (
                 <div className="pattern-bar" key={f.label}><span className="bar-label">{f.label}</span><div className="bar-row"><div className="bar-fill" style={{width:`${(f.count/maxFiller)*100}%`,background:'var(--coral)'}}></div><span className="bar-val">{f.count}</span></div></div>
               ))}
             </div>
             <div className="pattern-card"><h4>Top relief actions</h4>
-              {data.topEmptiers.map(e => (
+              {emptiersSorted.map(e => (
                 <div className="pattern-bar" key={e.label}><span className="bar-label">{e.label}</span><div className="bar-row"><div className="bar-fill" style={{width:`${(e.count/maxEmptier)*100}%`,background:'var(--teal)'}}></div><span className="bar-val">{e.count}</span></div></div>
               ))}
             </div>
@@ -804,7 +808,7 @@
                 {byDay.map(d => (
                   <div key={d.dow} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
                     <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.entries}</span>
-                    <div style={{width:'100%',background:'var(--teal)',borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.entries/maxDay)*70}px`,transition:'height 0.3s'}}></div>
+                    <div style={{width:'100%',background:lvlColor(d.avgLevel),borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.entries/maxDay)*70}px`,transition:'height 0.3s'}}></div>
                     <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.day.slice(0,3)}</span>
                   </div>
                 ))}
@@ -814,11 +818,12 @@
           {byHour.length > 0 && (
             <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
               <h4>Activity by hour</h4>
-              <div style={{display:'flex',gap:'1px',alignItems:'flex-end',height:'90px',paddingTop:'8px'}}>
+              <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'120px',paddingTop:'12px'}}>
                 {byHour.map(h => (
-                  <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'2px'}} title={`${h.hour}:00 - ${h.entries} entries`}>
-                    <div style={{width:'100%',background:'var(--amber)',borderRadius:'2px 2px 0 0',minHeight:'1px',height:`${(h.entries/maxHour)*65}px`,transition:'height 0.3s'}}></div>
-                    {h.hour % 4 === 0 && <span style={{fontSize:'0.65rem',color:'var(--text-muted)'}}>{h.hour}</span>}
+                  <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
+                    <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.entries}</span>
+                    <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',minHeight:'2px',height:`${(h.entries/maxHour)*70}px`,transition:'height 0.3s'}}></div>
+                    {h.hour % 4 === 0 && <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.hour}</span>}
                   </div>
                 ))}
               </div>
