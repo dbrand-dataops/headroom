@@ -514,21 +514,15 @@
       const [bucketTab, setBucketTab] = useState(() => {
         try { return localStorage.getItem('headroom_tab') || 'log'; } catch(e) { return 'log'; }
       });
-      const [customVals, setCustomVals] = useState({});
       const [logFilter, setLogFilter] = useState('load');
       const logRef = useRef(null);
 
       const switchTab = (tab) => { setBucketTab(tab); try { localStorage.setItem('headroom_tab', tab); } catch(e) {} };
-      const setCustomVal = (itemId, val) => setCustomVals(prev => ({ ...prev, [itemId]: val }));
 
       const load = useCallback(async () => {
         try {
           const [b, it, te] = await Promise.all([api('/bucket'), api('/items'), api('/entries/today')]);
           setLevel(b.level); setItems(it.items); setTodayEntries(te.entries);
-          // Initialize custom values from saved default_value per item
-          const initVals = {};
-          it.items.forEach(i => { if (i.default_value && i.default_value !== 10) initVals[i.id] = String(i.default_value); });
-          setCustomVals(initVals);
         } catch(e) { console.error(e); } finally { setLoading(false); }
       }, []);
 
@@ -548,8 +542,7 @@
         } catch(e) { console.error(e); }
       };
 
-      const handleCustomTap = async (item) => {
-        const val = parseInt(customVals[item.id]);
+      const handleCustomTap = async (item, val) => {
         if (!val || val < 1 || val > 100) return;
         try {
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id, value: val } });
@@ -557,6 +550,7 @@
           setTodayEntries(prev => [...prev, { id: data.entry.id, label: item.label, type: item.type, value: data.entry.value, levelAfter: data.entry.levelAfter, loggedAt: data.entry.loggedAt }]);
           // Persist custom value to item so it survives sessions
           api(`/items/${item.id}`, { method: 'PUT', body: { defaultValue: val } }).catch(()=>{});
+          setItems(prev => prev.map(i => i.id === item.id ? { ...i, default_value: val } : i));
         } catch(e) { console.error(e); }
       };
 
@@ -605,10 +599,16 @@
       </svg>
     );
 
-    function ItemRow({ item, type, editing, tapped, customVal, onTap, onCustomTap, onEdit, onRemove, onSetEditing, onSetCustomVal }) {
+    function ItemRow({ item, type, editing, tapped, onTap, onCustomTap, onEdit, onRemove, onSetEditing }) {
       const [editLabel, setEditLabel] = useState(item.label);
+      const customRef = useRef(null);
       const isFill = type === 'filler';
       const sym = isFill ? '+' : '\u2212';
+
+      const doCustom = () => {
+        const val = parseInt(customRef.current?.value);
+        if (val && val >= 1 && val <= 100) onCustomTap(item, val);
+      };
 
       if (editing === item.id) {
         return (
@@ -630,10 +630,10 @@
               <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
               <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>onTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
             </div>
-            <input className="custom-input" type="number" min="1" max="100" value={customVal} placeholder="#"
-              onChange={e=>onSetCustomVal(item.id, e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') onCustomTap(item); }} />
-            <button className="custom-go" onClick={()=>onCustomTap(item)} title="Log custom value">&#x25B6;</button>
+            <input className="custom-input" type="number" min="1" max="100" ref={customRef}
+              defaultValue={item.default_value && item.default_value !== 10 ? item.default_value : ''}
+              placeholder="#" onKeyDown={e => { if (e.key === 'Enter') doCustom(); }} />
+            <button className="custom-go" onClick={doCustom} title="Log custom value">&#x25B6;</button>
           </div>
           <button className="item-edit-btn" onClick={()=>onSetEditing(item.id)} title="Rename">&#x270E;</button>
           <button className="item-rm-btn" onClick={()=>onRemove(item.id)} title="Remove"><TrashIcon /></button>
@@ -644,9 +644,9 @@
       const renderGroup = (groupItems, type) => (
         <div>
           {groupItems.map(item => <ItemRow key={item.id} item={item} type={type}
-            editing={editing} tapped={tapped} customVal={customVals[item.id] || ''}
+            editing={editing} tapped={tapped}
             onTap={handleTap} onCustomTap={handleCustomTap} onEdit={handleEditItem}
-            onRemove={handleRemoveItem} onSetEditing={setEditing} onSetCustomVal={setCustomVal} />)}
+            onRemove={handleRemoveItem} onSetEditing={setEditing} />)}
           {adding === type ? (
             <div className="item-manage" style={{marginTop:'0.5rem'}}>
               <input className="lbl-input" placeholder={type==='filler'?'New stressor...':'New relief...'} value={addLabel} onChange={e=>setAddLabel(e.target.value)} autoFocus
