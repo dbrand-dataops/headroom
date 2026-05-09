@@ -222,9 +222,9 @@
     .custom-input::placeholder { color: var(--text-muted); opacity: 0.4; font-size: 0.7rem; }
     .custom-go { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-elevated); cursor: pointer; font-size: 0.75rem; color: var(--amber); display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
     .custom-go:hover { background: var(--amber-dim); border-color: var(--amber); }
-    .item-edit-btn { background: none; border: 1px solid rgba(79,209,197,0.2); border-radius: 4px; cursor: pointer; font-size: 0.82rem; padding: 0.3rem 0.45rem; transition: all 0.2s; color: var(--teal-deep); flex-shrink: 0; }
+    .item-edit-btn { background: none; border: 1px solid rgba(148,163,184,0.25); border-radius: 4px; cursor: pointer; font-size: 0.82rem; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
     .item-edit-btn:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-dim); }
-    .item-rm-btn { background: none; border: 1px solid rgba(252,129,129,0.15); border-radius: 4px; cursor: pointer; padding: 0.3rem 0.45rem; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; line-height: 1; }
+    .item-rm-btn { background: none; border: 1px solid rgba(148,163,184,0.25); border-radius: 4px; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
     .item-rm-btn:hover { color: var(--coral); border-color: rgba(252,129,129,0.3); background: var(--coral-dim); }
     .item-rm-btn svg { width: 14px; height: 14px; display: block; }
     .log-filter { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
@@ -1033,31 +1033,44 @@
       const logEntries = [...data.entries].sort((a,b) => new Date(b.loggedAt) - new Date(a.loggedAt));
       return (
         <div className="app-page" style={{paddingTop:'90px'}}>
-          <div style={{maxWidth:'700px',margin:'0 auto',padding:'0 2rem'}}>
-            <div style={{textAlign:'center',marginBottom:'2rem'}}>
+          <div className="app-layout">
+            <div className="bucket-panel">
               <div style={{fontSize:'0.85rem',color:'var(--text-muted)',marginBottom:'0.5rem'}}>{data.shareLabel}: {data.displayName}</div>
-              <BucketSVG level={data.level} size={0.9} />
-              <div className="level-reading" style={{color:col.main,marginTop:'0.5rem'}}>{data.level}%</div>
-              <div className="level-label">{data.word}</div>
-              <div className="headroom-reading">{data.headroom}% headroom</div>
+              <BucketSVG level={data.level} size={1} />
+              <div style={{textAlign:'center'}}>
+                <div className="level-reading" style={{color:col.main}}>{data.level}%</div>
+                <div className="level-label">{data.word}</div>
+                <div className="headroom-reading">{data.headroom}% headroom</div>
+              </div>
             </div>
-            {s.showChart && chartEntries.length > 1 && (
-              <div><h3 style={{fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1.05rem',color:'var(--text-bright)',marginBottom:'1rem'}}>Last 7 days</h3>
-                <HistoryChart entries={chartEntries} />
-              </div>
-            )}
-            {s.showLog && logEntries.length > 0 && (
-              <div style={{display:'flex',flexDirection:'column',gap:'0.35rem',maxHeight:'400px',overflowY:'auto',marginTop:'1rem'}}>
-                {logEntries.map(e => (
-                  <div className="log-entry" key={e.id}>
-                    <span className="time" style={{minWidth:'80px'}}>{fmtTime(e.loggedAt)}</span>
-                    <span className="label">{e.label}</span>
-                    <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
-                    <span className="level-after">{e.levelAfter}%</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="items-panel">
+              {s.showChart && chartEntries.length >= 1 && (
+                <div className="history-section">
+                  <h3>Last 7 days</h3>
+                  <HistoryChart entries={chartEntries} />
+                </div>
+              )}
+              {s.showLog && logEntries.length > 0 && (
+                <div className="history-section" style={{marginTop: s.showChart ? '1.5rem' : 0}}>
+                  <h3>Activity log</h3>
+                  <div className="history-log-wrap"><div className="history-log">
+                    {logEntries.map(e => (
+                      <div className="log-entry" key={e.id}>
+                        <span className="time" style={{minWidth:'80px'}}>{fmtTime(e.loggedAt)}</span>
+                        <span className="label">{e.label}</span>
+                        <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
+                        <span className="level-after">{e.levelAfter}%</span>
+                      </div>
+                    ))}
+                  </div></div>
+                </div>
+              )}
+              {(!s.showChart && !s.showLog) && (
+                <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
+                  <p>Chart and log are hidden for this share link.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );
