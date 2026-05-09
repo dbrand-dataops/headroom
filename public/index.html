@@ -818,12 +818,18 @@
           {byHour.length > 0 && (
             <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
               <h4>Activity by hour</h4>
-              <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'120px',paddingTop:'12px'}}>
+              <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'100px'}}>
                 {byHour.map(h => (
                   <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
                     <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.entries}</span>
                     <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',minHeight:'2px',height:`${(h.entries/maxHour)*70}px`,transition:'height 0.3s'}}></div>
-                    {h.hour % 4 === 0 && <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.hour}</span>}
+                  </div>
+                ))}
+              </div>
+              <div style={{display:'flex',gap:'2px',borderTop:'1px solid var(--border)',paddingTop:'4px',marginTop:'2px'}}>
+                {byHour.map(h => (
+                  <div key={h.hour} style={{flex:1,textAlign:'center'}}>
+                    {h.hour % 3 === 0 && <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.hour}</span>}
                   </div>
                 ))}
               </div>
