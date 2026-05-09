@@ -588,8 +588,8 @@
 
       if (loading) return <div className="loading">Loading your bucket...</div>;
       const col = levelColor(level);
-      const fillers = items.filter(i => i.type === 'filler');
-      const emptiers = items.filter(i => i.type === 'emptier');
+      const fillers = items.filter(i => i.type === 'filler').sort((a,b) => a.label.localeCompare(b.label));
+      const emptiers = items.filter(i => i.type === 'emptier').sort((a,b) => a.label.localeCompare(b.label));
       const displayEntries = [...todayEntries].reverse();
       const formatTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
