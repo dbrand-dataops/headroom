@@ -180,10 +180,11 @@
     .patterns-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
     .pattern-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
     .pattern-card h4 { font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--text-bright); margin-bottom: 1rem; }
-    .pattern-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; font-size: 0.88rem; }
-    .pattern-bar .bar-label { min-width: 120px; color: var(--text); }
-    .pattern-bar .bar-fill { height: 20px; border-radius: 3px; transition: width 0.5s; }
-    .pattern-bar .bar-val { min-width: 40px; color: var(--text-muted); font-size: 0.8rem; text-align: right; }
+    .pattern-bar { margin-bottom: 0.75rem; font-size: 0.88rem; }
+    .pattern-bar .bar-label { display: block; color: var(--text); margin-bottom: 0.25rem; font-size: 0.85rem; }
+    .pattern-bar .bar-row { display: flex; align-items: center; gap: 0.5rem; }
+    .pattern-bar .bar-fill { height: 18px; border-radius: 3px; transition: width 0.5s; min-width: 4px; }
+    .pattern-bar .bar-val { min-width: 30px; color: var(--text-muted); font-size: 0.82rem; text-align: right; font-variant-numeric: tabular-nums; }
 
     /* LOADING */
     .loading { display: flex; align-items: center; justify-content: center; padding: 4rem; color: var(--text-muted); font-style: italic; }
@@ -193,42 +194,47 @@
     .log-entry:hover .delete-btn { opacity: 1; }
     .log-entry .delete-btn:hover { color: var(--coral); }
 
-    /* ITEM ROWS (always-visible management like prototype) */
-    .item-row { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.5rem; }
-    .item-label-bar { flex: 1; font-size: 0.92rem; color: var(--text); padding: 0.5rem 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
-    .intensity-group { display: flex; gap: 3px; flex-shrink: 0; }
-    .intensity-btn { width: 38px; height: 32px; border-radius: 5px; border: 1px solid; cursor: pointer; font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; transition: all 0.15s; user-select: none; display: flex; align-items: center; justify-content: center; }
+    /* ITEM ROWS */
+    .item-row { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem; }
+    .item-inner { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid; min-width: 0; }
+    .item-inner.filler { background: var(--bg-card); border-color: rgba(252,129,129,0.15); }
+    .item-inner.emptier { background: var(--bg-card); border-color: rgba(79,209,197,0.15); }
+    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+    .intensity-group { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
+    .intensity-btn { width: 36px; height: 28px; border-radius: 4px; border: 1px solid; cursor: pointer; font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; transition: all 0.15s; user-select: none; display: flex; align-items: center; justify-content: center; }
     .intensity-btn:active { transform: scale(0.92); }
     .intensity-btn.tapped { animation: tapPulse 0.3s ease; }
-    .intensity-btn.filler.i1 { background: rgba(252,129,129,0.08); border-color: rgba(252,129,129,0.2); color: var(--coral); }
-    .intensity-btn.filler.i1:hover { background: rgba(252,129,129,0.18); border-color: var(--coral); }
-    .intensity-btn.filler.i2 { background: rgba(252,129,129,0.15); border-color: rgba(252,129,129,0.3); color: var(--coral); }
-    .intensity-btn.filler.i2:hover { background: rgba(252,129,129,0.28); border-color: var(--coral); }
-    .intensity-btn.filler.i3 { background: rgba(252,129,129,0.22); border-color: rgba(252,129,129,0.4); color: var(--coral-deep); }
-    .intensity-btn.filler.i3:hover { background: rgba(252,129,129,0.35); border-color: var(--coral); }
-    .intensity-btn.emptier.i1 { background: rgba(79,209,197,0.08); border-color: rgba(79,209,197,0.2); color: var(--teal); }
-    .intensity-btn.emptier.i1:hover { background: rgba(79,209,197,0.18); border-color: var(--teal); }
-    .intensity-btn.emptier.i2 { background: rgba(79,209,197,0.15); border-color: rgba(79,209,197,0.3); color: var(--teal); }
-    .intensity-btn.emptier.i2:hover { background: rgba(79,209,197,0.28); border-color: var(--teal); }
-    .intensity-btn.emptier.i3 { background: rgba(79,209,197,0.22); border-color: rgba(79,209,197,0.4); color: var(--teal-deep); }
-    .intensity-btn.emptier.i3:hover { background: rgba(79,209,197,0.35); border-color: var(--teal); }
-    .item-edit-btn, .item-rm-btn { background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0.4rem; opacity: 0.4; transition: all 0.2s; color: var(--text-muted); }
-    .item-edit-btn:hover { opacity: 1; color: var(--teal); }
-    .item-rm-btn:hover { opacity: 1; color: var(--coral); }
-    .item-row:hover .item-edit-btn, .item-row:hover .item-rm-btn { opacity: 0.7; }
+    .intensity-btn.filler.i1 { background: rgba(252,129,129,0.1); border-color: rgba(252,129,129,0.25); color: var(--coral); }
+    .intensity-btn.filler.i1:hover { background: rgba(252,129,129,0.2); border-color: var(--coral); }
+    .intensity-btn.filler.i2 { background: rgba(252,129,129,0.18); border-color: rgba(252,129,129,0.35); color: var(--coral); }
+    .intensity-btn.filler.i2:hover { background: rgba(252,129,129,0.3); border-color: var(--coral); }
+    .intensity-btn.filler.i3 { background: rgba(252,129,129,0.26); border-color: rgba(252,129,129,0.45); color: var(--coral); }
+    .intensity-btn.filler.i3:hover { background: rgba(252,129,129,0.38); border-color: var(--coral); }
+    .intensity-btn.emptier.i1 { background: rgba(79,209,197,0.1); border-color: rgba(79,209,197,0.25); color: var(--teal); }
+    .intensity-btn.emptier.i1:hover { background: rgba(79,209,197,0.2); border-color: var(--teal); }
+    .intensity-btn.emptier.i2 { background: rgba(79,209,197,0.18); border-color: rgba(79,209,197,0.35); color: var(--teal); }
+    .intensity-btn.emptier.i2:hover { background: rgba(79,209,197,0.3); border-color: var(--teal); }
+    .intensity-btn.emptier.i3 { background: rgba(79,209,197,0.26); border-color: rgba(79,209,197,0.45); color: var(--teal); }
+    .intensity-btn.emptier.i3:hover { background: rgba(79,209,197,0.38); border-color: var(--teal); }
+    .custom-input { width: 40px; height: 28px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 0.25rem; color: var(--text); font-family: var(--font-body); font-size: 0.8rem; text-align: center; outline: none; flex-shrink: 0; appearance: textfield; -moz-appearance: textfield; }
+    .custom-input::-webkit-outer-spin-button, .custom-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .custom-input:focus { border-color: var(--amber); }
+    .custom-input::placeholder { color: var(--text-muted); opacity: 0.4; font-size: 0.7rem; }
+    .custom-go { width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-elevated); cursor: pointer; font-size: 0.75rem; color: var(--amber); display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+    .custom-go:hover { background: var(--amber-dim); border-color: var(--amber); }
+    .item-edit-btn { background: none; border: 1px solid rgba(79,209,197,0.2); border-radius: 4px; cursor: pointer; font-size: 0.82rem; padding: 0.3rem 0.45rem; transition: all 0.2s; color: var(--teal-deep); flex-shrink: 0; }
+    .item-edit-btn:hover { color: var(--teal); border-color: var(--teal); background: var(--teal-dim); }
+    .item-rm-btn { background: none; border: 1px solid rgba(252,129,129,0.15); border-radius: 4px; cursor: pointer; padding: 0.3rem 0.45rem; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; line-height: 1; }
+    .item-rm-btn:hover { color: var(--coral); border-color: rgba(252,129,129,0.3); background: var(--coral-dim); }
+    .item-rm-btn svg { width: 14px; height: 14px; display: block; }
+    .log-filter { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .log-filter button { flex: 1; padding: 0.5rem 0.75rem; background: none; border: none; font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+    .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); }
+    .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); }
+    .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-card); }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
-    .custom-val-btn { background: none; border: none; cursor: pointer; font-size: 0.8rem; padding: 0.3rem; opacity: 0.3; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
-    .custom-val-btn:hover { opacity: 1; color: var(--amber); }
-    .item-row:hover .custom-val-btn { opacity: 0.6; }
-    .custom-val-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.5rem; background: var(--bg-card); border: 1px solid var(--border-hover); border-radius: 5px; margin-bottom: 0.5rem; margin-top: -0.25rem; }
-    .custom-val-row input { width: 50px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.4rem; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; text-align: center; outline: none; }
-    .custom-val-row input:focus { border-color: var(--teal); }
-    .custom-val-row .go-btn { background: none; border: 1px solid var(--teal); border-radius: 4px; padding: 0.25rem 0.6rem; color: var(--teal); cursor: pointer; font-size: 0.8rem; font-family: var(--font-body); }
-    .custom-val-row .go-btn:hover { background: var(--teal-dim); }
-    .custom-val-row .cancel-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 0.1rem 0.3rem; opacity: 0.6; }
-    .custom-val-row .cancel-btn:hover { color: var(--coral); opacity: 1; }
     .add-item-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; padding: 0.5rem 1rem; color: var(--text-muted); cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin-top: 0.5rem; transition: all 0.2s; width: 100%; text-align: center; }
     .add-item-btn:hover { border-color: var(--teal); color: var(--teal); }
 
@@ -508,11 +514,12 @@
       const [bucketTab, setBucketTab] = useState(() => {
         try { return localStorage.getItem('headroom_tab') || 'log'; } catch(e) { return 'log'; }
       });
-      const [customItem, setCustomItem] = useState(null); // item id showing custom input
-      const [customVal, setCustomVal] = useState('');
+      const [customVals, setCustomVals] = useState({});
+      const [logFilter, setLogFilter] = useState('load');
       const logRef = useRef(null);
 
       const switchTab = (tab) => { setBucketTab(tab); try { localStorage.setItem('headroom_tab', tab); } catch(e) {} };
+      const setCustomVal = (itemId, val) => setCustomVals(prev => ({ ...prev, [itemId]: val }));
 
       const load = useCallback(async () => {
         try {
@@ -538,13 +545,12 @@
       };
 
       const handleCustomTap = async (item) => {
-        const val = parseInt(customVal);
+        const val = parseInt(customVals[item.id]);
         if (!val || val < 1 || val > 100) return;
         try {
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id, value: val } });
           setLevel(data.level);
           setTodayEntries(prev => [...prev, { id: data.entry.id, label: item.label, type: item.type, value: data.entry.value, levelAfter: data.entry.levelAfter, loggedAt: data.entry.loggedAt }]);
-          setCustomItem(null); setCustomVal('');
         } catch(e) { console.error(e); }
       };
 
@@ -587,11 +593,18 @@
       const displayEntries = [...todayEntries].reverse();
       const formatTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+      const TrashIcon = () => (
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 4h12M5.5 4V2.5a1 1 0 011-1h3a1 1 0 011 1V4M6.5 7v5M9.5 7v5M3.5 4l.75 9.5a1 1 0 001 .9h5.5a1 1 0 001-.9L12.5 4"/>
+        </svg>
+      );
+
       const ItemRow = ({ item, type }) => {
         const [editLabel, setEditLabel] = useState(item.label);
         const isEditing = editing === item.id;
         const isFill = type === 'filler';
         const sym = isFill ? '+' : '\u2212';
+        const cv = customVals[item.id] || '';
 
         if (isEditing) {
           return (
@@ -605,28 +618,22 @@
         }
 
         return (
-          <>
-            <div className={`item-row ${type}`}>
+          <div className={`item-row ${type}`}>
+            <div className={`item-inner ${type}`}>
               <span className="item-label-bar">{item.label}</span>
               <div className="intensity-group">
                 <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>handleTap(item,1)} title="Mild">{sym}</button>
                 <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>handleTap(item,2)} title="Moderate">{sym}{sym}</button>
                 <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>handleTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
               </div>
-              <button className="custom-val-btn" onClick={()=>{setCustomItem(customItem===item.id?null:item.id);setCustomVal('');}} title="Custom value">#</button>
-              <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Rename">&#x270E;</button>
-              <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
+              <input className="custom-input" type="number" min="1" max="100" value={cv} placeholder="#"
+                onChange={e=>setCustomVal(item.id, e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleCustomTap(item); }} />
+              <button className="custom-go" onClick={()=>handleCustomTap(item)} title="Log custom value">&#x25B6;</button>
             </div>
-            {customItem === item.id && (
-              <div className="custom-val-row">
-                <span style={{fontSize:'0.8rem',color:'var(--text-muted)'}}>Custom:</span>
-                <input type="number" min="1" max="100" value={customVal} onChange={e=>setCustomVal(e.target.value)} autoFocus placeholder="0"
-                  onKeyDown={e => { if (e.key === 'Enter') handleCustomTap(item); if (e.key === 'Escape') { setCustomItem(null); setCustomVal(''); } }} />
-                <button className="go-btn" onClick={()=>handleCustomTap(item)}>Log</button>
-                <button className="cancel-btn" onClick={()=>{setCustomItem(null);setCustomVal('');}}>&#x2715;</button>
-              </div>
-            )}
-          </>
+            <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Rename">&#x270E;</button>
+            <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove"><TrashIcon /></button>
+          </div>
         );
       };
 
@@ -669,12 +676,20 @@
                   <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then through the day, log <strong style={{color:'var(--teal)'}}>relief</strong> items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
                 </div>
               )}
-              <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
-                {renderGroup(fillers, 'filler')}
+              <div className="log-filter">
+                <button className={logFilter==='load'?'active-load':''} onClick={()=>setLogFilter('load')}>Load</button>
+                <button className={logFilter==='relief'?'active-relief':''} onClick={()=>setLogFilter('relief')}>Relief</button>
               </div>
-              <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
-                {renderGroup(emptiers, 'emptier')}
-              </div>
+              {logFilter === 'load' && (
+                <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
+                  {renderGroup(fillers, 'filler')}
+                </div>
+              )}
+              {logFilter === 'relief' && (
+                <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
+                  {renderGroup(emptiers, 'emptier')}
+                </div>
+              )}
             </>}
 
             {bucketTab === 'overview' && <>
@@ -750,8 +765,14 @@
       useEffect(() => { load(days); }, [days]);
       if (loading) return <div className="loading">Computing patterns...</div>;
       if (!data) return <div className="app-content"><p>No data yet.</p></div>;
-      const maxFiller = Math.max(...data.topFillers.map(f=>f.totalImpact), 1);
-      const maxEmptier = Math.max(...data.topEmptiers.map(e=>e.totalRelief), 1);
+      const maxFiller = Math.max(...data.topFillers.map(f=>f.count), 1);
+      const maxEmptier = Math.max(...data.topEmptiers.map(e=>e.count), 1);
+
+      const byDay = data.byDayOfWeek || [];
+      const maxDay = Math.max(...byDay.map(d=>d.entries||0), 1);
+      const byHour = data.byHour || [];
+      const maxHour = Math.max(...byHour.map(h=>h.entries||0), 1);
+
       return (
         <div className="app-content">
           <h2 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)',marginBottom:'1rem'}}>Patterns</h2>
@@ -766,12 +787,43 @@
           </div>
           <div className="patterns-grid">
             <div className="pattern-card"><h4>Top load sources</h4>
-              {data.topFillers.map(f => <div className="pattern-bar" key={f.label}><span className="bar-label">{f.label}</span><div className="bar-fill" style={{width:`${(f.totalImpact/maxFiller)*100}%`,background:'var(--coral)'}}></div><span className="bar-val">{f.totalImpact}</span></div>)}
+              {data.topFillers.map(f => (
+                <div className="pattern-bar" key={f.label}><span className="bar-label">{f.label}</span><div className="bar-row"><div className="bar-fill" style={{width:`${(f.count/maxFiller)*100}%`,background:'var(--coral)'}}></div><span className="bar-val">{f.count}</span></div></div>
+              ))}
             </div>
             <div className="pattern-card"><h4>Top relief actions</h4>
-              {data.topEmptiers.map(e => <div className="pattern-bar" key={e.label}><span className="bar-label">{e.label}</span><div className="bar-fill" style={{width:`${(e.totalRelief/maxEmptier)*100}%`,background:'var(--teal)'}}></div><span className="bar-val">{e.totalRelief}</span></div>)}
+              {data.topEmptiers.map(e => (
+                <div className="pattern-bar" key={e.label}><span className="bar-label">{e.label}</span><div className="bar-row"><div className="bar-fill" style={{width:`${(e.count/maxEmptier)*100}%`,background:'var(--teal)'}}></div><span className="bar-val">{e.count}</span></div></div>
+              ))}
             </div>
           </div>
+          {byDay.length > 0 && (
+            <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
+              <h4>Activity by day of week</h4>
+              <div style={{display:'flex',gap:'0.4rem',alignItems:'flex-end',height:'120px',paddingTop:'12px'}}>
+                {byDay.map(d => (
+                  <div key={d.dow} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
+                    <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.entries}</span>
+                    <div style={{width:'100%',background:'var(--teal)',borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.entries/maxDay)*70}px`,transition:'height 0.3s'}}></div>
+                    <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.day.slice(0,3)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {byHour.length > 0 && (
+            <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
+              <h4>Activity by hour</h4>
+              <div style={{display:'flex',gap:'1px',alignItems:'flex-end',height:'90px',paddingTop:'8px'}}>
+                {byHour.map(h => (
+                  <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'2px'}} title={`${h.hour}:00 - ${h.entries} entries`}>
+                    <div style={{width:'100%',background:'var(--amber)',borderRadius:'2px 2px 0 0',minHeight:'1px',height:`${(h.entries/maxHour)*65}px`,transition:'height 0.3s'}}></div>
+                    {h.hour % 4 === 0 && <span style={{fontSize:'0.65rem',color:'var(--text-muted)'}}>{h.hour}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {data.longestFillerRun > 0 && <p style={{color:'var(--text-muted)',fontSize:'0.9rem'}}>Longest consecutive load run without relief: <strong style={{color:'var(--coral)'}}>{data.longestFillerRun}</strong> entries</p>}
         </div>
       );
