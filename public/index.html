@@ -525,6 +525,10 @@
         try {
           const [b, it, te] = await Promise.all([api('/bucket'), api('/items'), api('/entries/today')]);
           setLevel(b.level); setItems(it.items); setTodayEntries(te.entries);
+          // Initialize custom values from saved default_value per item
+          const initVals = {};
+          it.items.forEach(i => { if (i.default_value && i.default_value !== 10) initVals[i.id] = String(i.default_value); });
+          setCustomVals(initVals);
         } catch(e) { console.error(e); } finally { setLoading(false); }
       }, []);
 
@@ -551,6 +555,8 @@
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id, value: val } });
           setLevel(data.level);
           setTodayEntries(prev => [...prev, { id: data.entry.id, label: item.label, type: item.type, value: data.entry.value, levelAfter: data.entry.levelAfter, loggedAt: data.entry.loggedAt }]);
+          // Persist custom value to item so it survives sessions
+          api(`/items/${item.id}`, { method: 'PUT', body: { defaultValue: val } }).catch(()=>{});
         } catch(e) { console.error(e); }
       };
 
@@ -593,53 +599,54 @@
       const displayEntries = [...todayEntries].reverse();
       const formatTime = (ts) => new Date(ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
-      const TrashIcon = () => (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 4h12M5.5 4V2.5a1 1 0 011-1h3a1 1 0 011 1V4M6.5 7v5M9.5 7v5M3.5 4l.75 9.5a1 1 0 001 .9h5.5a1 1 0 001-.9L12.5 4"/>
-        </svg>
-      );
+    const TrashIcon = () => (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 4h12M5.5 4V2.5a1 1 0 011-1h3a1 1 0 011 1V4M6.5 7v5M9.5 7v5M3.5 4l.75 9.5a1 1 0 001 .9h5.5a1 1 0 001-.9L12.5 4"/>
+      </svg>
+    );
 
-      const ItemRow = ({ item, type }) => {
-        const [editLabel, setEditLabel] = useState(item.label);
-        const isEditing = editing === item.id;
-        const isFill = type === 'filler';
-        const sym = isFill ? '+' : '\u2212';
-        const cv = customVals[item.id] || '';
+    function ItemRow({ item, type, editing, tapped, customVal, onTap, onCustomTap, onEdit, onRemove, onSetEditing, onSetCustomVal }) {
+      const [editLabel, setEditLabel] = useState(item.label);
+      const isFill = type === 'filler';
+      const sym = isFill ? '+' : '\u2212';
 
-        if (isEditing) {
-          return (
-            <div className="item-manage">
-              <input className="lbl-input" value={editLabel} onChange={e=>setEditLabel(e.target.value)} autoFocus
-                onKeyDown={e => { if (e.key === 'Enter') handleEditItem(item.id, editLabel); if (e.key === 'Escape') setEditing(null); }} />
-              <button className="add-btn" onClick={()=>handleEditItem(item.id, editLabel)}>Save</button>
-              <button className="rm-btn" onClick={()=>setEditing(null)}>&#x2715;</button>
-            </div>
-          );
-        }
-
+      if (editing === item.id) {
         return (
-          <div className={`item-row ${type}`}>
-            <div className={`item-inner ${type}`}>
-              <span className="item-label-bar">{item.label}</span>
-              <div className="intensity-group">
-                <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>handleTap(item,1)} title="Mild">{sym}</button>
-                <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>handleTap(item,2)} title="Moderate">{sym}{sym}</button>
-                <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>handleTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
-              </div>
-              <input className="custom-input" type="number" min="1" max="100" value={cv} placeholder="#"
-                onChange={e=>setCustomVal(item.id, e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') handleCustomTap(item); }} />
-              <button className="custom-go" onClick={()=>handleCustomTap(item)} title="Log custom value">&#x25B6;</button>
-            </div>
-            <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Rename">&#x270E;</button>
-            <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove"><TrashIcon /></button>
+          <div className="item-manage">
+            <input className="lbl-input" value={editLabel} onChange={e=>setEditLabel(e.target.value)} autoFocus
+              onKeyDown={e => { if (e.key === 'Enter') onEdit(item.id, editLabel); if (e.key === 'Escape') onSetEditing(null); }} />
+            <button className="add-btn" onClick={()=>onEdit(item.id, editLabel)}>Save</button>
+            <button className="rm-btn" onClick={()=>onSetEditing(null)}>&#x2715;</button>
           </div>
         );
-      };
+      }
+
+      return (
+        <div className={`item-row ${type}`}>
+          <div className={`item-inner ${type}`}>
+            <span className="item-label-bar">{item.label}</span>
+            <div className="intensity-group">
+              <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>onTap(item,1)} title="Mild">{sym}</button>
+              <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
+              <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>onTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
+            </div>
+            <input className="custom-input" type="number" min="1" max="100" value={customVal} placeholder="#"
+              onChange={e=>onSetCustomVal(item.id, e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') onCustomTap(item); }} />
+            <button className="custom-go" onClick={()=>onCustomTap(item)} title="Log custom value">&#x25B6;</button>
+          </div>
+          <button className="item-edit-btn" onClick={()=>onSetEditing(item.id)} title="Rename">&#x270E;</button>
+          <button className="item-rm-btn" onClick={()=>onRemove(item.id)} title="Remove"><TrashIcon /></button>
+        </div>
+      );
+    }
 
       const renderGroup = (groupItems, type) => (
         <div>
-          {groupItems.map(item => <ItemRow key={item.id} item={item} type={type} />)}
+          {groupItems.map(item => <ItemRow key={item.id} item={item} type={type}
+            editing={editing} tapped={tapped} customVal={customVals[item.id] || ''}
+            onTap={handleTap} onCustomTap={handleCustomTap} onEdit={handleEditItem}
+            onRemove={handleRemoveItem} onSetEditing={setEditing} onSetCustomVal={setCustomVal} />)}
           {adding === type ? (
             <div className="item-manage" style={{marginTop:'0.5rem'}}>
               <input className="lbl-input" placeholder={type==='filler'?'New stressor...':'New relief...'} value={addLabel} onChange={e=>setAddLabel(e.target.value)} autoFocus
