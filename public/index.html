@@ -86,6 +86,10 @@
     .reset-btn { background: none; border: 1px solid rgba(148,163,184,0.2); color: var(--text-muted); font-family: var(--font-body); font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; margin-top: 0.25rem; }
     .reset-btn:hover { border-color: var(--coral); color: var(--coral); }
     .items-panel { display: flex; flex-direction: column; gap: 2rem; }
+    .bucket-tabs { display: flex; gap: 0; margin-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
+    .bucket-tab { flex: 1; padding: 0.65rem 1rem; background: none; border: none; font-family: var(--font-body); font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .bucket-tab:hover { color: var(--text); }
+    .bucket-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
     .item-group h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
     .item-group h3 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
     .item-group.fillers h3 { color: var(--coral); } .item-group.fillers .dot { background: var(--coral); }
@@ -208,13 +212,23 @@
     .intensity-btn.emptier.i2:hover { background: rgba(79,209,197,0.28); border-color: var(--teal); }
     .intensity-btn.emptier.i3 { background: rgba(79,209,197,0.22); border-color: rgba(79,209,197,0.4); color: var(--teal-deep); }
     .intensity-btn.emptier.i3:hover { background: rgba(79,209,197,0.35); border-color: var(--teal); }
-    .item-edit-btn, .item-rm-btn { background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0.4rem; opacity: 0.25; transition: all 0.2s; color: var(--text-muted); }
+    .item-edit-btn, .item-rm-btn { background: none; border: none; cursor: pointer; font-size: 0.95rem; padding: 0.4rem; opacity: 0.4; transition: all 0.2s; color: var(--text-muted); }
     .item-edit-btn:hover { opacity: 1; color: var(--teal); }
     .item-rm-btn:hover { opacity: 1; color: var(--coral); }
-    .item-row:hover .item-edit-btn, .item-row:hover .item-rm-btn { opacity: 0.6; }
+    .item-row:hover .item-edit-btn, .item-row:hover .item-rm-btn { opacity: 0.7; }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
+    .custom-val-btn { background: none; border: none; cursor: pointer; font-size: 0.8rem; padding: 0.3rem; opacity: 0.3; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
+    .custom-val-btn:hover { opacity: 1; color: var(--amber); }
+    .item-row:hover .custom-val-btn { opacity: 0.6; }
+    .custom-val-row { display: flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.5rem; background: var(--bg-card); border: 1px solid var(--border-hover); border-radius: 5px; margin-bottom: 0.5rem; margin-top: -0.25rem; }
+    .custom-val-row input { width: 50px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.4rem; color: var(--text); font-family: var(--font-body); font-size: 0.85rem; text-align: center; outline: none; }
+    .custom-val-row input:focus { border-color: var(--teal); }
+    .custom-val-row .go-btn { background: none; border: 1px solid var(--teal); border-radius: 4px; padding: 0.25rem 0.6rem; color: var(--teal); cursor: pointer; font-size: 0.8rem; font-family: var(--font-body); }
+    .custom-val-row .go-btn:hover { background: var(--teal-dim); }
+    .custom-val-row .cancel-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 0.1rem 0.3rem; opacity: 0.6; }
+    .custom-val-row .cancel-btn:hover { color: var(--coral); opacity: 1; }
     .add-item-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; padding: 0.5rem 1rem; color: var(--text-muted); cursor: pointer; font-family: var(--font-body); font-size: 0.85rem; margin-top: 0.5rem; transition: all 0.2s; width: 100%; text-align: center; }
     .add-item-btn:hover { border-color: var(--teal); color: var(--teal); }
 
@@ -491,7 +505,14 @@
       const [editing, setEditing] = useState(null); // item id being edited
       const [adding, setAdding] = useState(null); // 'filler' or 'emptier'
       const [addLabel, setAddLabel] = useState('');
+      const [bucketTab, setBucketTab] = useState(() => {
+        try { return localStorage.getItem('headroom_tab') || 'log'; } catch(e) { return 'log'; }
+      });
+      const [customItem, setCustomItem] = useState(null); // item id showing custom input
+      const [customVal, setCustomVal] = useState('');
       const logRef = useRef(null);
+
+      const switchTab = (tab) => { setBucketTab(tab); try { localStorage.setItem('headroom_tab', tab); } catch(e) {} };
 
       const load = useCallback(async () => {
         try {
@@ -506,14 +527,24 @@
 
       const handleTap = async (item, intensityLevel) => {
         if (editing === item.id) return;
-        const rawVal = INTENSITY[intensityLevel] || 12;
-        const value = item.type === 'filler' ? rawVal : -rawVal;
+        const value = INTENSITY[intensityLevel] || 12;
         try {
           const data = await api('/entries', { method: 'POST', body: { itemId: item.id, value } });
           setLevel(data.level);
           setTodayEntries(prev => [...prev, { id: data.entry.id, label: item.label, type: item.type, value: data.entry.value, levelAfter: data.entry.levelAfter, loggedAt: data.entry.loggedAt }]);
           setTapped(item.id + '-' + intensityLevel); setTimeout(() => setTapped(null), 300);
           setTimeout(() => { if (logRef.current) logRef.current.scrollTop = 0; }, 50);
+        } catch(e) { console.error(e); }
+      };
+
+      const handleCustomTap = async (item) => {
+        const val = parseInt(customVal);
+        if (!val || val < 1 || val > 100) return;
+        try {
+          const data = await api('/entries', { method: 'POST', body: { itemId: item.id, value: val } });
+          setLevel(data.level);
+          setTodayEntries(prev => [...prev, { id: data.entry.id, label: item.label, type: item.type, value: data.entry.value, levelAfter: data.entry.levelAfter, loggedAt: data.entry.loggedAt }]);
+          setCustomItem(null); setCustomVal('');
         } catch(e) { console.error(e); }
       };
 
@@ -574,16 +605,28 @@
         }
 
         return (
-          <div className={`item-row ${type}`}>
-            <span className="item-label-bar">{item.label}</span>
-            <div className="intensity-group">
-              <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>handleTap(item,1)} title="Mild">{sym}</button>
-              <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>handleTap(item,2)} title="Moderate">{sym}{sym}</button>
-              <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>handleTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
+          <>
+            <div className={`item-row ${type}`}>
+              <span className="item-label-bar">{item.label}</span>
+              <div className="intensity-group">
+                <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>handleTap(item,1)} title="Mild">{sym}</button>
+                <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>handleTap(item,2)} title="Moderate">{sym}{sym}</button>
+                <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>handleTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
+              </div>
+              <button className="custom-val-btn" onClick={()=>{setCustomItem(customItem===item.id?null:item.id);setCustomVal('');}} title="Custom value">#</button>
+              <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Rename">&#x270E;</button>
+              <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
             </div>
-            <button className="item-edit-btn" onClick={()=>setEditing(item.id)} title="Edit">&#x270E;</button>
-            <button className="item-rm-btn" onClick={()=>handleRemoveItem(item.id)} title="Remove">&#x2715;</button>
-          </div>
+            {customItem === item.id && (
+              <div className="custom-val-row">
+                <span style={{fontSize:'0.8rem',color:'var(--text-muted)'}}>Custom:</span>
+                <input type="number" min="1" max="100" value={customVal} onChange={e=>setCustomVal(e.target.value)} autoFocus placeholder="0"
+                  onKeyDown={e => { if (e.key === 'Enter') handleCustomTap(item); if (e.key === 'Escape') { setCustomItem(null); setCustomVal(''); } }} />
+                <button className="go-btn" onClick={()=>handleCustomTap(item)}>Log</button>
+                <button className="cancel-btn" onClick={()=>{setCustomItem(null);setCustomVal('');}}>&#x2715;</button>
+              </div>
+            )}
+          </>
         );
       };
 
@@ -614,34 +657,50 @@
             </div>
           </div>
           <div className="items-panel">
-            {todayEntries.length === 0 && level === 0 && (
-              <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'1.5rem'}}>
-                <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
-                <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then through the day, log <strong style={{color:'var(--teal)'}}>relief</strong> items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
-              </div>
-            )}
-            <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
-              {renderGroup(fillers, 'filler')}
+            <div className="bucket-tabs">
+              <button className={`bucket-tab${bucketTab==='log'?' active':''}`} onClick={()=>switchTab('log')}>Log</button>
+              <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
             </div>
-            <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
-              {renderGroup(emptiers, 'emptier')}
-            </div>
-            {todayEntries.length > 0 && (
-              <div className="history-section"><h3>Today</h3>
-                <HistoryChart entries={todayEntries} />
-                <div className="history-log-wrap"><div className="history-log" ref={logRef}>
-                  {displayEntries.map(e => (
-                    <div className="log-entry" key={e.id}>
-                      <span className="time">{formatTime(e.loggedAt)}</span>
-                      <span className="label">{e.label}</span>
-                      <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
-                      <span className="level-after">{e.levelAfter}%</span>
-                      <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
-                    </div>
-                  ))}
-                </div></div>
+
+            {bucketTab === 'log' && <>
+              {todayEntries.length === 0 && level === 0 && (
+                <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'0.5rem'}}>
+                  <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
+                  <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then through the day, log <strong style={{color:'var(--teal)'}}>relief</strong> items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
+                </div>
+              )}
+              <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
+                {renderGroup(fillers, 'filler')}
               </div>
-            )}
+              <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
+                {renderGroup(emptiers, 'emptier')}
+              </div>
+            </>}
+
+            {bucketTab === 'overview' && <>
+              {todayEntries.length > 0 ? (
+                <div className="history-section">
+                  <HistoryChart entries={todayEntries} />
+                  <h3 style={{marginTop:'1.5rem'}}>Today's log</h3>
+                  <div className="history-log-wrap"><div className="history-log" ref={logRef}>
+                    {displayEntries.map(e => (
+                      <div className="log-entry" key={e.id}>
+                        <span className="time">{formatTime(e.loggedAt)}</span>
+                        <span className="label">{e.label}</span>
+                        <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
+                        <span className="level-after">{e.levelAfter}%</span>
+                        <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
+                      </div>
+                    ))}
+                  </div></div>
+                </div>
+              ) : (
+                <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
+                  <p style={{fontSize:'0.95rem'}}>No entries yet today.</p>
+                  <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('log')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Log</button> to start logging.</p>
+                </div>
+              )}
+            </>}
           </div>
         </div>
       );
