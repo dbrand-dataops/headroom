@@ -199,11 +199,12 @@
     .log-entry .delete-btn:hover { color: var(--coral); }
 
     /* ITEM ROWS */
-    .item-row { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem; }
-    .item-inner { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid; min-width: 0; }
+    .item-row { display: flex; align-items: flex-start; gap: 0.35rem; margin-bottom: 0.5rem; }
+    .item-inner { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid; min-width: 0; }
     .item-inner.filler { background: var(--bg-card); border-color: rgba(252,129,129,0.15); }
     .item-inner.emptier { background: var(--bg-card); border-color: rgba(79,209,197,0.15); }
-    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .item-label-bar { font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    .item-controls { display: flex; align-items: center; gap: 3px; }
     .label-tooltip { position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--bg-elevated); border: 1px solid var(--border-hover); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.85rem; color: var(--text-bright); white-space: normal; word-break: break-word; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.4); min-width: 160px; max-width: 280px; pointer-events: none; }
     .label-tooltip::after { content: ''; position: absolute; top: 100%; left: 16px; border: 6px solid transparent; border-top-color: var(--border-hover); }
     .intensity-group { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
@@ -238,7 +239,11 @@
     .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); border-color: rgba(252,129,129,0.3); }
     .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); border-color: rgba(79,209,197,0.3); }
     .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-elevated); border-color: var(--border-hover); }
-    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; padding-right: 0.75rem; }
+    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; padding-right: 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(79,209,197,0.45) var(--bg-elevated); }
+    .items-scroll::-webkit-scrollbar { width: 6px; }
+    .items-scroll::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 3px; }
+    .items-scroll::-webkit-scrollbar-thumb { background: rgba(79,209,197,0.45); border-radius: 3px; }
+    .items-scroll::-webkit-scrollbar-thumb:hover { background: rgba(79,209,197,0.7); }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
@@ -657,15 +662,17 @@
         <div className={`item-row ${type}`}>
           <div className={`item-inner ${type}`}>
             <span className="item-label-bar" onTouchStart={handleLabelTap} onClick={handleLabelTap}>{item.label}{showTip && <span className="label-tooltip">{item.label}</span>}</span>
-            <div className="intensity-group">
-              <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>onTap(item,1)} title="Mild">{sym}</button>
-              <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
-              <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>onTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
+            <div className="item-controls">
+              <div className="intensity-group">
+                <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>onTap(item,1)} title="Mild">{sym}</button>
+                <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
+                <button className={`intensity-btn ${type} i3${tapped===item.id+'-3'?' tapped':''}`} onClick={()=>onTap(item,3)} title="Strong">{sym}{sym}{sym}</button>
+              </div>
+              <input className="custom-input" type="number" min="1" max="100" ref={customRef}
+                defaultValue={item.default_value && item.default_value !== 10 ? item.default_value : ''}
+                placeholder="#" onKeyDown={e => { if (e.key === 'Enter') doCustom(); }} />
+              <button className="custom-go" onClick={doCustom} title="Log custom value">&#x25B6;</button>
             </div>
-            <input className="custom-input" type="number" min="1" max="100" ref={customRef}
-              defaultValue={item.default_value && item.default_value !== 10 ? item.default_value : ''}
-              placeholder="#" onKeyDown={e => { if (e.key === 'Enter') doCustom(); }} />
-            <button className="custom-go" onClick={doCustom} title="Log custom value">&#x25B6;</button>
           </div>
           <button className="item-edit-btn" onClick={()=>onSetEditing(item.id)} title="Rename">&#x270E;</button>
           <button className="item-rm-btn" onClick={()=>onRemove(item.id)} title="Remove"><TrashIcon /></button>
@@ -869,33 +876,59 @@
           </div>
           {byDay.length > 0 && (
             <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
-              <h4>Activity by day of week</h4>
-              <div style={{display:'flex',gap:'0.4rem',alignItems:'flex-end',height:'120px',paddingTop:'12px'}}>
-                {byDay.map(d => (
-                  <div key={d.dow} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
-                    <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.entries}</span>
-                    <div style={{width:'100%',background:lvlColor(d.avgLevel),borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.avgLevel/100)*70}px`,transition:'height 0.3s'}}></div>
-                    <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.day.slice(0,3)}</span>
+              <h4>Average load by day of week</h4>
+              <div style={{display:'flex',gap:'0.5rem',marginTop:'0.5rem'}}>
+                <div style={{position:'relative',width:'24px',height:'80px',flexShrink:0}}>
+                  <span style={{position:'absolute',top:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>100</span>
+                  <span style={{position:'absolute',top:'50%',right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>50</span>
+                  <span style={{position:'absolute',bottom:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(50%)'}}>0</span>
+                </div>
+                <div style={{flex:1,position:'relative',height:'80px'}}>
+                  <div style={{position:'absolute',left:0,right:0,top:0,borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,top:'50%',borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,bottom:0,borderTop:'1px solid var(--border)'}}/>
+                  <div style={{display:'flex',gap:'0.4rem',alignItems:'flex-end',height:'100%'}}>
+                    {byDay.map(d => (
+                      <div key={d.dow} style={{flex:1,height:'100%',display:'flex',alignItems:'flex-end'}}>
+                        <div style={{width:'100%',background:lvlColor(d.avgLevel),borderRadius:'3px 3px 0 0',height:`${d.avgLevel}%`,minHeight:d.avgLevel>0?'2px':'0',transition:'height 0.3s'}}/>
+                      </div>
+                    ))}
                   </div>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:'0.4rem',paddingLeft:'28px',marginTop:'4px'}}>
+                {byDay.map(d => (
+                  <div key={d.dow} style={{flex:1,textAlign:'center',fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.day.slice(0,3)}</div>
                 ))}
               </div>
             </div>
           )}
           {byHour.length > 0 && (
             <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
-              <h4>Activity by hour</h4>
-              <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'100px'}}>
-                {byHour.map(h => (
-                  <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
-                    <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.entries||''}</span>
-                    <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',minHeight:'2px',height:`${(h.avgLevel/100)*70}px`,transition:'height 0.3s'}}></div>
+              <h4>Average load by hour</h4>
+              <div style={{display:'flex',gap:'0.5rem',marginTop:'0.5rem'}}>
+                <div style={{position:'relative',width:'24px',height:'70px',flexShrink:0}}>
+                  <span style={{position:'absolute',top:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>100</span>
+                  <span style={{position:'absolute',top:'50%',right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>50</span>
+                  <span style={{position:'absolute',bottom:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(50%)'}}>0</span>
+                </div>
+                <div style={{flex:1,position:'relative',height:'70px'}}>
+                  <div style={{position:'absolute',left:0,right:0,top:0,borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,top:'50%',borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,bottom:0,borderTop:'1px solid var(--border)'}}/>
+                  <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'100%'}}>
+                    {byHour.map(h => (
+                      <div key={h.hour} style={{flex:1,height:'100%',display:'flex',alignItems:'flex-end'}}>
+                        <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',height:`${h.avgLevel}%`,minHeight:h.avgLevel>0?'2px':'0',transition:'height 0.3s'}}/>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-              <div style={{display:'flex',gap:'2px',borderTop:'1px solid var(--border)',paddingTop:'4px',marginTop:'2px'}}>
+              <div style={{display:'flex',gap:'2px',paddingLeft:'28px',marginTop:'4px'}}>
                 {byHour.map(h => (
                   <div key={h.hour} style={{flex:1,textAlign:'center'}}>
-                    <span style={{fontSize:'0.55rem',color:'var(--text-muted)'}}>{h.hour}</span>
+                    <span style={{fontSize:'0.55rem',color:'var(--text-muted)'}}>{h.hour%6===0?h.hour:''}</span>
                   </div>
                 ))}
               </div>
