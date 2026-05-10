@@ -515,6 +515,9 @@
         try { return localStorage.getItem('headroom_tab') || 'log'; } catch(e) { return 'log'; }
       });
       const [logFilter, setLogFilter] = useState('load');
+      const [overviewDays, setOverviewDays] = useState(1);
+      const [historyEntries, setHistoryEntries] = useState([]);
+      const [historyLoading, setHistoryLoading] = useState(false);
       const logRef = useRef(null);
 
       const switchTab = (tab) => { setBucketTab(tab); try { localStorage.setItem('headroom_tab', tab); } catch(e) {} };
@@ -527,6 +530,15 @@
       }, []);
 
       useEffect(() => { load(); }, [load]);
+
+      // Load history entries for overview tab
+      const loadHistory = useCallback(async (d) => {
+        if (d <= 1) return; // 24h uses todayEntries
+        setHistoryLoading(true);
+        try { const data = await api(`/entries?days=${d}`); setHistoryEntries(data.entries); }
+        catch(e) {} finally { setHistoryLoading(false); }
+      }, []);
+      useEffect(() => { if (overviewDays > 1) loadHistory(overviewDays); }, [overviewDays, loadHistory]);
 
       const INTENSITY = { 1: 5, 2: 12, 3: 20 };
 
@@ -700,28 +712,41 @@
             </>}
 
             {bucketTab === 'overview' && <>
-              {todayEntries.length > 0 ? (
-                <div className="history-section">
-                  <HistoryChart entries={todayEntries} />
-                  <h3 style={{marginTop:'1.5rem'}}>Today's log</h3>
-                  <div className="history-log-wrap"><div className="history-log" ref={logRef}>
-                    {displayEntries.map(e => (
-                      <div className="log-entry" key={e.id}>
-                        <span className="time">{formatTime(e.loggedAt)}</span>
-                        <span className="label">{e.label}</span>
-                        <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
-                        <span className="level-after">{e.levelAfter}%</span>
-                        <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
-                      </div>
-                    ))}
-                  </div></div>
-                </div>
-              ) : (
-                <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
-                  <p style={{fontSize:'0.95rem'}}>No entries yet today.</p>
-                  <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('log')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Log</button> to start logging.</p>
-                </div>
-              )}
+              <div style={{display:'flex',gap:'0.5rem',marginBottom:'1.25rem'}}>
+                {[{d:1,label:'24h'},{d:7,label:'7d'},{d:30,label:'30d'},{d:90,label:'90d'}].map(({d,label}) =>
+                  <button key={d} className={overviewDays===d?'btn-primary':'btn-secondary'} onClick={()=>setOverviewDays(d)} style={{padding:'0.5rem 1rem',fontSize:'0.85rem'}}>{label}</button>
+                )}
+              </div>
+              {(() => {
+                const is24h = overviewDays <= 1;
+                const entries = is24h ? todayEntries : historyEntries;
+                const displayList = is24h ? [...todayEntries].reverse() : historyEntries;
+                const fmtTime = (ts) => { const d = new Date(ts); return is24h ? d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); };
+                if (historyLoading && !is24h) return <div className="loading">Loading...</div>;
+                if (entries.length === 0) return (
+                  <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
+                    <p style={{fontSize:'0.95rem'}}>No entries {is24h ? 'yet today' : `in the last ${overviewDays} days`}.</p>
+                    {is24h && <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('log')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Log</button> to start logging.</p>}
+                  </div>
+                );
+                return (
+                  <div className="history-section">
+                    <HistoryChart entries={is24h ? entries : [...entries].reverse()} />
+                    <h3 style={{marginTop:'1.5rem'}}>{is24h ? "Today's log" : `Last ${overviewDays} days`}</h3>
+                    <div className="history-log-wrap"><div className="history-log" ref={logRef} style={is24h ? {} : {maxHeight:'500px'}}>
+                      {displayList.map(e => (
+                        <div className="log-entry" key={e.id}>
+                          <span className="time" style={is24h ? {} : {minWidth:'90px'}}>{fmtTime(e.loggedAt)}</span>
+                          <span className="label">{e.label}</span>
+                          <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
+                          <span className="level-after">{e.levelAfter}%</span>
+                          <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
+                        </div>
+                      ))}
+                    </div></div>
+                  </div>
+                );
+              })()}
             </>}
           </div>
         </div>
@@ -788,7 +813,7 @@
         <div className="app-content">
           <h2 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)',marginBottom:'1rem'}}>Patterns</h2>
           <div style={{display:'flex',gap:'0.5rem',marginBottom:'1.5rem'}}>
-            {[7,14,30,90].map(d => <button key={d} className={days===d?'btn-primary':'btn-secondary'} onClick={()=>setDays(d)} style={{padding:'0.5rem 1rem',fontSize:'0.85rem'}}>{d}d</button>)}
+            {[{d:1,label:'24h'},{d:7,label:'7d'},{d:14,label:'14d'},{d:30,label:'30d'},{d:90,label:'90d'}].map(({d,label}) => <button key={d} className={days===d?'btn-primary':'btn-secondary'} onClick={()=>setDays(d)} style={{padding:'0.5rem 1rem',fontSize:'0.85rem'}}>{label}</button>)}
           </div>
           <div className="stat-grid">
             <div className="stat-card"><div className="num">{data.summary.totalEntries}</div><div className="lbl">Entries</div></div>
@@ -815,7 +840,7 @@
                 {byDay.map(d => (
                   <div key={d.dow} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'4px'}}>
                     <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.entries}</span>
-                    <div style={{width:'100%',background:lvlColor(d.avgLevel),borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.entries/maxDay)*70}px`,transition:'height 0.3s'}}></div>
+                    <div style={{width:'100%',background:lvlColor(d.avgLevel),borderRadius:'3px 3px 0 0',minHeight:'2px',height:`${(d.avgLevel/100)*70}px`,transition:'height 0.3s'}}></div>
                     <span style={{fontSize:'0.7rem',color:'var(--text-muted)'}}>{d.day.slice(0,3)}</span>
                   </div>
                 ))}
@@ -828,8 +853,8 @@
               <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'100px'}}>
                 {byHour.map(h => (
                   <div key={h.hour} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'3px'}}>
-                    <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.entries}</span>
-                    <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',minHeight:'2px',height:`${(h.entries/maxHour)*70}px`,transition:'height 0.3s'}}></div>
+                    <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.entries||''}</span>
+                    <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',minHeight:'2px',height:`${(h.avgLevel/100)*70}px`,transition:'height 0.3s'}}></div>
                   </div>
                 ))}
               </div>
@@ -1190,7 +1215,6 @@
           <nav><a className="logo" onClick={()=>navigate('app')}>headroom</a>
             <ul className="nav-links">
               <li><a className={tab==='bucket'||tab===''?'active':''} onClick={()=>navigate('app')}>Bucket</a></li>
-              <li><a className={tab==='history'?'active':''} onClick={()=>navigate('app/history')}>History</a></li>
               <li><a className={tab==='patterns'?'active':''} onClick={()=>navigate('app/patterns')}>Patterns</a></li>
               <li><a className={tab==='settings'?'active':''} onClick={()=>navigate('app/settings')}>Settings</a></li>
               {user.isAdmin && <li><a className={tab==='admin'?'active':''} onClick={()=>navigate('app/admin')}>Admin</a></li>}
@@ -1198,7 +1222,6 @@
           </nav>
           <div className="app-page">
             {(tab===''||tab==='bucket') && <AppBucket user={user} />}
-            {tab==='history' && <AppHistory />}
             {tab==='patterns' && <AppPatterns />}
             {tab==='settings' && <AppSettings user={user} onLogout={onLogout} />}
             {tab==='admin' && user.isAdmin && <AdminPanel />}
