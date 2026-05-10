@@ -85,8 +85,8 @@
     .headroom-reading { font-family: var(--font-display); font-style: italic; font-weight: 300; font-size: 1.1rem; color: var(--text-muted); }
     .reset-btn { background: none; border: 1px solid rgba(148,163,184,0.2); color: var(--text-muted); font-family: var(--font-body); font-size: 0.8rem; padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; margin-top: 0.25rem; }
     .reset-btn:hover { border-color: var(--coral); color: var(--coral); }
-    .items-panel { display: flex; flex-direction: column; gap: 2rem; }
-    .bucket-tabs { display: flex; gap: 0; margin-bottom: 0.25rem; border-bottom: 1px solid var(--border); }
+    .items-panel { display: flex; flex-direction: column; height: calc(100vh - 90px); overflow: hidden; }
+    .bucket-tabs { display: flex; gap: 0; margin-bottom: 0.25rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .bucket-tab { flex: 1; padding: 0.65rem 1rem; background: none; border: none; font-family: var(--font-body); font-size: 0.9rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
     .bucket-tab:hover { color: var(--text); }
     .bucket-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
@@ -227,11 +227,12 @@
     .item-rm-btn { background: none; border: 1px solid rgba(148,163,184,0.25); border-radius: 4px; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
     .item-rm-btn:hover { color: var(--coral); border-color: rgba(252,129,129,0.3); background: var(--coral-dim); }
     .item-rm-btn svg { width: 14px; height: 14px; display: block; }
-    .log-filter { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .log-filter { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     .log-filter button { flex: 1; padding: 0.5rem 0.75rem; background: none; border: none; font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
     .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); }
     .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); }
     .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-card); }
+    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
@@ -257,6 +258,7 @@
       .bucket-panel { position: relative; top: 0; flex-direction: row; flex-wrap: wrap; justify-content: center; }
       .bucket-panel svg { width: 140px; height: auto; }
       .level-reading { font-size: 2rem; }
+      .items-panel { height: calc(100vh - 280px); }
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
       .patterns-grid { grid-template-columns: 1fr; }
     }
@@ -690,16 +692,17 @@
             </div>
 
             {bucketTab === 'log' && <>
+              <div className="log-filter">
+                <button className={logFilter==='load'?'active-load':''} onClick={()=>setLogFilter('load')}>Load</button>
+                <button className={logFilter==='relief'?'active-relief':''} onClick={()=>setLogFilter('relief')}>Relief</button>
+              </div>
+              <div className="items-scroll">
               {todayEntries.length === 0 && level === 0 && (
                 <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'0.5rem'}}>
                   <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
                   <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then through the day, log <strong style={{color:'var(--teal)'}}>relief</strong> items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
                 </div>
               )}
-              <div className="log-filter">
-                <button className={logFilter==='load'?'active-load':''} onClick={()=>setLogFilter('load')}>Load</button>
-                <button className={logFilter==='relief'?'active-relief':''} onClick={()=>setLogFilter('relief')}>Relief</button>
-              </div>
               {logFilter === 'load' && (
                 <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
                   {renderGroup(fillers, 'filler')}
@@ -710,14 +713,16 @@
                   {renderGroup(emptiers, 'emptier')}
                 </div>
               )}
+              </div>
             </>}
 
             {bucketTab === 'overview' && <>
-              <div style={{display:'flex',gap:'0.5rem',marginBottom:'1.25rem'}}>
+              <div style={{display:'flex',gap:'0.5rem',marginBottom:'1.25rem',flexShrink:0}}>
                 {[{d:1,label:'24h'},{d:7,label:'7d'},{d:30,label:'30d'},{d:90,label:'90d'}].map(({d,label}) =>
                   <button key={d} className={overviewDays===d?'btn-primary':'btn-secondary'} onClick={()=>setOverviewDays(d)} style={{padding:'0.5rem 1rem',fontSize:'0.85rem'}}>{label}</button>
                 )}
               </div>
+              <div className="items-scroll">
               {(() => {
                 const is24h = overviewDays <= 1;
                 const entries = historyEntries;
@@ -748,6 +753,7 @@
                   </div>
                 );
               })()}
+              </div>
             </>}
           </div>
         </div>
