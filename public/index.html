@@ -199,7 +199,7 @@
     .item-inner { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid; min-width: 0; }
     .item-inner.filler { background: var(--bg-card); border-color: rgba(252,129,129,0.15); }
     .item-inner.emptier { background: var(--bg-card); border-color: rgba(79,209,197,0.15); }
-    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; position: relative; cursor: pointer; }
+    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; position: relative; cursor: pointer; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
     .label-tooltip { position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--bg-elevated); border: 1px solid var(--border-hover); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.85rem; color: var(--text-bright); white-space: normal; word-break: break-word; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.4); min-width: 160px; max-width: 280px; pointer-events: none; }
     .label-tooltip::after { content: ''; position: absolute; top: 100%; left: 16px; border: 6px solid transparent; border-top-color: var(--border-hover); }
     .intensity-group { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
@@ -229,12 +229,12 @@
     .item-rm-btn { background: none; border: 1px solid rgba(148,163,184,0.25); border-radius: 4px; cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text-muted); flex-shrink: 0; }
     .item-rm-btn:hover { color: var(--coral); border-color: rgba(252,129,129,0.3); background: var(--coral-dim); }
     .item-rm-btn svg { width: 14px; height: 14px; display: block; }
-    .log-filter { display: flex; gap: 0; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
-    .log-filter button { flex: 1; padding: 0.5rem 0.75rem; background: none; border: none; font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-    .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); }
-    .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); }
-    .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-card); }
-    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; }
+    .log-filter { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-shrink: 0; }
+    .log-filter button { flex: 1; padding: 0.5rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border-radius: 6px; }
+    .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); border-color: rgba(252,129,129,0.3); }
+    .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); border-color: rgba(79,209,197,0.3); }
+    .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-elevated); border-color: var(--border-hover); }
+    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; padding-right: 0.75rem; }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
@@ -625,6 +625,7 @@
       const sym = isFill ? '+' : '\u2212';
 
       const handleLabelTap = (e) => {
+        e.preventDefault();
         e.stopPropagation();
         setShowTip(true);
         clearTimeout(tipTimer.current);
@@ -650,7 +651,7 @@
       return (
         <div className={`item-row ${type}`}>
           <div className={`item-inner ${type}`}>
-            <span className="item-label-bar" onClick={handleLabelTap}>{item.label}{showTip && <span className="label-tooltip">{item.label}</span>}</span>
+            <span className="item-label-bar" onTouchStart={handleLabelTap} onClick={handleLabelTap}>{item.label}{showTip && <span className="label-tooltip">{item.label}</span>}</span>
             <div className="intensity-group">
               <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>onTap(item,1)} title="Mild">{sym}</button>
               <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
