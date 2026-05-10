@@ -710,7 +710,7 @@
                   <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
                   <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then switch to <strong style={{color:'var(--teal)'}}>Relief</strong> and log items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
                 </div>
-              )}
+              )}<div><div></div></div>
               <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
                 {renderGroup(fillers, 'filler')}
               </div>
@@ -718,7 +718,7 @@
             )}
 
             {bucketTab === 'relief' && (
-              <div className="items-scroll">
+              <div className="items-scroll"><div><div></div></div>
               <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
                 {renderGroup(emptiers, 'emptier')}
               </div>
