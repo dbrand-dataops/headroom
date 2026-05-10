@@ -891,21 +891,8 @@
 
       const byDay = data.byDayOfWeek || [];
       const maxDay = Math.max(...byDay.map(d=>d.entries||0), 1);
-
-      // Merge any duplicate hour-of-day entries (e.g. 24h window spanning midnight
-      // may return the same hour from two calendar days) then fill all 24 slots.
-      const hourMap = {};
-      (data.byHour || []).forEach(h => {
-        const hr = parseInt(h.hour);
-        if (!hourMap[hr]) hourMap[hr] = { sumLevel: 0, count: 0 };
-        hourMap[hr].sumLevel += (h.avgLevel || 0) * (h.entries || 1);
-        hourMap[hr].count += (h.entries || 1);
-      });
-      const allHours = Array.from({length: 24}, (_, i) => ({
-        hour: i,
-        avgLevel: hourMap[i] ? Math.round(hourMap[i].sumLevel / hourMap[i].count) : 0,
-        hasData: !!hourMap[i]
-      }));
+      const byHour = data.byHour || [];
+      const maxHour = Math.max(...byHour.map(h=>h.entries||0), 1);
 
       const lvlColor = (lvl) => lvl > 70 ? 'var(--coral)' : lvl > 40 ? 'var(--amber)' : 'var(--teal)';
 
@@ -933,7 +920,7 @@
               ))}
             </div>
           </div>
-          {byDay.length > 0 && (
+          {byDay.length > 0 && days > 1 && (
             <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
               <h4>Average load by day of week</h4>
               <div style={{display:'flex',gap:'0.5rem',marginTop:'0.5rem'}}>
@@ -962,41 +949,37 @@
               </div>
             </div>
           )}
-          <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
-            <h4>Average load by hour</h4>
-            <div style={{display:'flex',gap:'0.5rem',marginTop:'0.5rem'}}>
-              <div style={{position:'relative',width:'24px',height:'70px',flexShrink:0}}>
-                <span style={{position:'absolute',top:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>100</span>
-                <span style={{position:'absolute',top:'50%',right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>50</span>
-                <span style={{position:'absolute',bottom:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(50%)'}}>0</span>
-              </div>
-              <div style={{flex:1,position:'relative',height:'70px'}}>
-                <div style={{position:'absolute',left:0,right:0,top:0,borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
-                <div style={{position:'absolute',left:0,right:0,top:'50%',borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
-                <div style={{position:'absolute',left:0,right:0,bottom:0,borderTop:'1px solid var(--border)'}}/>
-                <div style={{display:'flex',gap:'1px',alignItems:'flex-end',height:'100%'}}>
-                  {allHours.map(h => (
-                    <div key={h.hour} style={{flex:1,height:'100%',display:'flex',alignItems:'flex-end'}}>
-                      <div style={{
-                        width:'100%',
-                        borderRadius:'2px 2px 0 0',
-                        transition:'height 0.3s',
-                        background: h.avgLevel > 0 ? lvlColor(h.avgLevel) : 'rgba(148,163,184,0.3)',
-                        height: h.avgLevel > 0 ? `${h.avgLevel}%` : '2px'
-                      }}/>
-                    </div>
-                  ))}
+          {byHour.length > 0 && (
+            <div className="pattern-card" style={{marginBottom:'1.5rem'}}>
+              <h4>Average load by hour</h4>
+              <div style={{display:'flex',gap:'0.5rem',marginTop:'0.5rem'}}>
+                <div style={{position:'relative',width:'24px',height:'70px',flexShrink:0}}>
+                  <span style={{position:'absolute',top:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>100</span>
+                  <span style={{position:'absolute',top:'50%',right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(-50%)'}}>50</span>
+                  <span style={{position:'absolute',bottom:0,right:0,fontSize:'0.6rem',color:'var(--text-muted)',transform:'translateY(50%)'}}>0</span>
+                </div>
+                <div style={{flex:1,position:'relative',height:'70px'}}>
+                  <div style={{position:'absolute',left:0,right:0,top:0,borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,top:'50%',borderTop:'1px dashed rgba(148,163,184,0.12)'}}/>
+                  <div style={{position:'absolute',left:0,right:0,bottom:0,borderTop:'1px solid var(--border)'}}/>
+                  <div style={{display:'flex',gap:'2px',alignItems:'flex-end',height:'100%'}}>
+                    {byHour.map(h => (
+                      <div key={h.hour} style={{flex:1,height:'100%',display:'flex',alignItems:'flex-end'}}>
+                        <div style={{width:'100%',background:lvlColor(h.avgLevel),borderRadius:'2px 2px 0 0',height:`${h.avgLevel}%`,minHeight:h.avgLevel>0?'2px':'0',transition:'height 0.3s'}}/>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+              <div style={{display:'flex',gap:'2px',paddingLeft:'28px',marginTop:'4px'}}>
+                {byHour.map(h => (
+                  <div key={h.hour} style={{flex:1,textAlign:'center'}}>
+                    <span style={{fontSize:'0.55rem',color:'var(--text-muted)'}}>{h.hour%6===0?h.hour:''}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{display:'flex',gap:'1px',paddingLeft:'28px',marginTop:'4px'}}>
-              {allHours.map(h => (
-                <div key={h.hour} style={{flex:1,textAlign:'center'}}>
-                  <span style={{fontSize:'0.55rem',color:'var(--text-muted)'}}>{h.hour%6===0?h.hour:''}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
           {data.longestFillerRun > 0 && <p style={{color:'var(--text-muted)',fontSize:'0.9rem'}}>Longest consecutive load run without relief: <strong style={{color:'var(--coral)'}}>{data.longestFillerRun}</strong> entries</p>}
         </div>
       );
