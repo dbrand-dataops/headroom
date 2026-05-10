@@ -109,7 +109,11 @@
     .history-chart-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
     .history-log-wrap { position: relative; max-height: 320px; overflow: hidden; }
     .history-log-wrap::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; z-index: 1; }
-    .history-log { display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--bg-elevated) var(--bg-card); padding-bottom: 2.5rem; }
+    .history-log { display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(79,209,197,0.45) var(--bg-elevated); padding-bottom: 2.5rem; }
+    .history-log::-webkit-scrollbar { width: 6px; }
+    .history-log::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 3px; }
+    .history-log::-webkit-scrollbar-thumb { background: rgba(79,209,197,0.45); border-radius: 3px; }
+    .history-log::-webkit-scrollbar-thumb:hover { background: rgba(79,209,197,0.7); }
     .log-entry { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.88rem; background: var(--bg-card); border: 1px solid var(--border); }
     .log-entry .time { color: var(--text-muted); font-size: 0.8rem; min-width: 44px; font-variant-numeric: tabular-nums; }
     .log-entry .label { flex: 1; color: var(--text); }
@@ -543,6 +547,8 @@
       useEffect(() => { loadHistory(overviewDays); }, [overviewDays, loadHistory]);
       // Re-fetch 24h view when todayEntries changes (new item tapped)
       useEffect(() => { if (overviewDays <= 1) loadHistory(1); }, [todayEntries.length]);
+      // Reset overview log scroll to top whenever entries reload or day range changes
+      useEffect(() => { if (logRef.current) logRef.current.scrollTop = 0; }, [historyEntries, overviewDays]);
 
       const INTENSITY = { 1: 5, 2: 12, 3: 20 };
 
@@ -1083,7 +1089,9 @@
     // ═══════════════════════════════════════
     function SharedView({ token }) {
       const [data, setData] = useState(null); const [error, setError] = useState('');
+      const logRef = useRef(null);
       useEffect(() => { api(`/share/view/${token}`).then(setData).catch(e=>setError(e.message)); }, [token]);
+      useEffect(() => { if (logRef.current) logRef.current.scrollTop = 0; }, [data]);
       if (error) return <div className="auth-page"><div className="auth-card"><h1>Not found</h1><p className="subtitle">{error}</p></div></div>;
       if (!data) return <div className="loading">Loading shared view...</div>;
       const col = levelColor(data.level);
@@ -1113,7 +1121,7 @@
               {s.showLog && logEntries.length > 0 && (
                 <div className="history-section" style={{marginTop: s.showChart ? '1.5rem' : 0}}>
                   <h3>Activity log</h3>
-                  <div className="history-log-wrap"><div className="history-log">
+                  <div className="history-log-wrap"><div className="history-log" ref={logRef}>
                     {logEntries.map(e => (
                       <div className="log-entry" key={e.id}>
                         <span className="time" style={{minWidth:'80px'}}>{fmtTime(e.loggedAt)}</span>
