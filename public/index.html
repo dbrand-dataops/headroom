@@ -109,11 +109,11 @@
     .history-chart-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
     .history-log-wrap { position: relative; max-height: 320px; overflow: hidden; }
     .history-log-wrap::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--bg)); pointer-events: none; z-index: 1; }
-    .history-log { display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(79,209,197,0.45) var(--bg-elevated); padding-bottom: 2.5rem; }
-    .history-log::-webkit-scrollbar { width: 6px; }
-    .history-log::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 3px; }
-    .history-log::-webkit-scrollbar-thumb { background: rgba(79,209,197,0.45); border-radius: 3px; }
-    .history-log::-webkit-scrollbar-thumb:hover { background: rgba(79,209,197,0.7); }
+    .history-log { display: flex; flex-direction: column; gap: 0.35rem; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.4) var(--bg-elevated); padding-bottom: 2.5rem; }
+    .history-log::-webkit-scrollbar { width: 8px; }
+    .history-log::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 4px; }
+    .history-log::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 4px; }
+    .history-log::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.65); }
     .log-entry { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.88rem; background: var(--bg-card); border: 1px solid var(--border); }
     .log-entry .time { color: var(--text-muted); font-size: 0.8rem; min-width: 44px; font-variant-numeric: tabular-nums; }
     .log-entry .label { flex: 1; color: var(--text); }
@@ -239,11 +239,11 @@
     .log-filter button.active-load { background: var(--coral-dim); color: var(--coral); border-color: rgba(252,129,129,0.3); }
     .log-filter button.active-relief { background: var(--teal-dim); color: var(--teal); border-color: rgba(79,209,197,0.3); }
     .log-filter button:not(.active-load):not(.active-relief):hover { background: var(--bg-elevated); border-color: var(--border-hover); }
-    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; padding-right: 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(79,209,197,0.45) var(--bg-elevated); }
-    .items-scroll::-webkit-scrollbar { width: 6px; }
-    .items-scroll::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 3px; }
-    .items-scroll::-webkit-scrollbar-thumb { background: rgba(79,209,197,0.45); border-radius: 3px; }
-    .items-scroll::-webkit-scrollbar-thumb:hover { background: rgba(79,209,197,0.7); }
+    .items-scroll { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 2rem; padding-right: 0.5rem; scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.4) var(--bg-elevated); }
+    .items-scroll::-webkit-scrollbar { width: 8px; }
+    .items-scroll::-webkit-scrollbar-track { background: var(--bg-elevated); border-radius: 4px; }
+    .items-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 4px; }
+    .items-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.65); }
     .copy-link-btn { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 0.3rem 0.65rem; color: var(--teal); cursor: pointer; font-size: 0.78rem; font-family: var(--font-body); transition: all 0.2s; flex-shrink: 0; }
     .copy-link-btn:hover { background: var(--teal-dim); border-color: var(--teal); }
     .copy-link-btn.copied { color: var(--success); border-color: var(--success); }
@@ -525,7 +525,7 @@
       const [adding, setAdding] = useState(null); // 'filler' or 'emptier'
       const [addLabel, setAddLabel] = useState('');
       const [bucketTab, setBucketTab] = useState(() => {
-        try { return localStorage.getItem('headroom_tab') || 'load'; } catch(e) { return 'load'; }
+        try { const t = localStorage.getItem('headroom_tab') || 'loadrelief'; return (t === 'load' || t === 'relief') ? 'loadrelief' : t; } catch(e) { return 'loadrelief'; }
       });
       const [overviewDays, setOverviewDays] = useState(1);
       const [historyEntries, setHistoryEntries] = useState([]);
@@ -552,7 +552,6 @@
       useEffect(() => { loadHistory(overviewDays); }, [overviewDays, loadHistory]);
       // Re-fetch 24h view when todayEntries changes (new item tapped)
       useEffect(() => { if (overviewDays <= 1) loadHistory(1); }, [todayEntries.length]);
-      // Reset overview log scroll to top whenever entries reload or day range changes
       useEffect(() => { if (logRef.current) logRef.current.scrollTop = 0; }, [historyEntries, overviewDays]);
 
       const INTENSITY = { 1: 5, 2: 12, 3: 20 };
@@ -711,31 +710,26 @@
           </div>
           <div className="items-panel">
             <div className="bucket-tabs">
-              <button className={`bucket-tab${bucketTab==='load'?' active':''}`} onClick={()=>switchTab('load')}>Load</button>
-              <button className={`bucket-tab${bucketTab==='relief'?' active':''}`} onClick={()=>switchTab('relief')}>Relief</button>
+              <button className={`bucket-tab${bucketTab==='loadrelief'?' active':''}`} onClick={()=>switchTab('loadrelief')}>Load / Relief</button>
               <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
             </div>
 
-            {bucketTab === 'load' && <>
-              <div style={{marginTop:'30px',display:'flex',gap:'0.5rem',marginBottom:'12px',flexShrink:0}}></div>
+            {bucketTab === 'loadrelief' && <>
+              <div style={{marginTop:'30px',flexShrink:0}}></div>
               <div className="items-scroll">
               {todayEntries.length === 0 && level === 0 && (
-                <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'0.5rem'}}>
+                <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'1rem'}}>
                   <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
-                  <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Start your day by logging the <strong style={{color:'var(--coral)'}}>load</strong> items that apply right now. Use <strong style={{color:'var(--coral)'}}>+</strong> for mild, <strong style={{color:'var(--coral)'}}>++</strong> for moderate, or <strong style={{color:'var(--coral)'}}>+++</strong> for strong. Your level will rise. Then switch to <strong style={{color:'var(--teal)'}}>Relief</strong> and log items as you do them. Watch the level come down. The space between your level and the top is your headroom.</p>
+                  <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Log <strong style={{color:'var(--coral)'}}>Load</strong> items that apply right now using <strong style={{color:'var(--coral)'}}>+</strong> / <strong style={{color:'var(--coral)'}}>++</strong> / <strong style={{color:'var(--coral)'}}>+++</strong>. Then log <strong style={{color:'var(--teal)'}}>Relief</strong> actions as you do them. The space between your level and the top is your headroom.</p>
                 </div>
               )}
-              <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
-                {renderGroup(fillers, 'filler')}
-              </div>
-              </div>
-            </>}
-
-            {bucketTab === 'relief' && <>
-              <div style={{marginTop:'30px',display:'flex',gap:'0.5rem',marginBottom:'12px',flexShrink:0}}></div>
-              <div className="items-scroll">
-              <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
-                {renderGroup(emptiers, 'emptier')}
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
+                <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
+                  {renderGroup(fillers, 'filler')}
+                </div>
+                <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
+                  {renderGroup(emptiers, 'emptier')}
+                </div>
               </div>
               </div>
             </>}
@@ -766,7 +760,7 @@
                 if (entries.length === 0) return (
                   <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
                     <p style={{fontSize:'0.95rem'}}>No entries in the last {is24h ? '24 hours' : `${overviewDays} days`}.</p>
-                    <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('load')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Load</button> to start logging.</p>
+                    <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('loadrelief')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Load / Relief</button> to start logging.</p>
                   </div>
                 );
                 return (
@@ -780,7 +774,7 @@
                           <span className="label">{e.label}</span>
                           <span className={`delta ${e.value>0?'up':'down'}`}>{e.value>0?'+':''}{e.value}</span>
                           <span className="level-after">{e.levelAfter}%</span>
-                          <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete">&#x2715;</button>
+                          <button className="delete-btn" onClick={()=>handleDeleteEntry(e.id)} title="Delete" style={{width:'20px',height:'20px',display:'flex',alignItems:'center',justifyContent:'center',padding:0}}><TrashIcon /></button>
                         </div>
                       ))}
                     </div></div>
