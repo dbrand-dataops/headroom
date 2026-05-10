@@ -672,7 +672,7 @@
       if (editing === item.id) {
         return (
           <div className="item-manage">
-            <input className="lbl-input" value={editLabel} maxLength={30} onChange={e=>setEditLabel(e.target.value)} autoFocus
+            <input className="lbl-input" value={editLabel} maxLength={36} onChange={e=>setEditLabel(e.target.value)} autoFocus
               onKeyDown={e => { if (e.key === 'Enter') onEdit(item.id, editLabel); if (e.key === 'Escape') onSetEditing(null); }} />
             <button className="add-btn" onClick={()=>onEdit(item.id, editLabel)}>Save</button>
             <button className="rm-btn" onClick={()=>onSetEditing(null)}>&#x2715;</button>
@@ -711,7 +711,7 @@
             onRemove={handleRemoveItem} onSetEditing={setEditing} />)}
           {adding === type ? (
             <div className="item-manage" style={{marginTop:'0.5rem'}}>
-              <input className="lbl-input" placeholder={type==='filler'?'New stressor...':'New relief...'} value={addLabel} maxLength={30} onChange={e=>setAddLabel(e.target.value)} autoFocus
+              <input className="lbl-input" placeholder={type==='filler'?'New stressor...':'New relief...'} value={addLabel} maxLength={36} onChange={e=>setAddLabel(e.target.value)} autoFocus
                 onKeyDown={e => { if (e.key === 'Enter') handleAddItem(type); if (e.key === 'Escape') { setAdding(null); setAddLabel(''); } }} />
               <button className="add-btn" onClick={()=>handleAddItem(type)}>Add</button>
               <button className="rm-btn" onClick={()=>{setAdding(null);setAddLabel('');}}>&#x2715;</button>
