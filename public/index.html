@@ -533,12 +533,13 @@
 
       // Load history entries for overview tab
       const loadHistory = useCallback(async (d) => {
-        if (d <= 1) return; // 24h uses todayEntries
         setHistoryLoading(true);
         try { const data = await api(`/entries?days=${d}`); setHistoryEntries(data.entries); }
         catch(e) {} finally { setHistoryLoading(false); }
       }, []);
-      useEffect(() => { if (overviewDays > 1) loadHistory(overviewDays); }, [overviewDays, loadHistory]);
+      useEffect(() => { loadHistory(overviewDays); }, [overviewDays, loadHistory]);
+      // Re-fetch 24h view when todayEntries changes (new item tapped)
+      useEffect(() => { if (overviewDays <= 1) loadHistory(1); }, [todayEntries.length]);
 
       const INTENSITY = { 1: 5, 2: 12, 3: 20 };
 
@@ -719,21 +720,21 @@
               </div>
               {(() => {
                 const is24h = overviewDays <= 1;
-                const entries = is24h ? todayEntries : historyEntries;
-                const displayList = is24h ? [...todayEntries].reverse() : historyEntries;
+                const entries = historyEntries;
+                const displayList = is24h ? [...historyEntries].reverse() : historyEntries;
                 const fmtTime = (ts) => { const d = new Date(ts); return is24h ? d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); };
-                if (historyLoading && !is24h) return <div className="loading">Loading...</div>;
+                if (historyLoading) return <div className="loading">Loading...</div>;
                 if (entries.length === 0) return (
                   <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
-                    <p style={{fontSize:'0.95rem'}}>No entries {is24h ? 'yet today' : `in the last ${overviewDays} days`}.</p>
-                    {is24h && <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('log')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Log</button> to start logging.</p>}
+                    <p style={{fontSize:'0.95rem'}}>No entries in the last {is24h ? '24 hours' : `${overviewDays} days`}.</p>
+                    <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('log')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Log</button> to start logging.</p>
                   </div>
                 );
                 return (
                   <div className="history-section">
                     <HistoryChart entries={is24h ? entries : [...entries].reverse()} />
-                    <h3 style={{marginTop:'1.5rem'}}>{is24h ? "Today's log" : `Last ${overviewDays} days`}</h3>
-                    <div className="history-log-wrap"><div className="history-log" ref={logRef} style={is24h ? {} : {maxHeight:'500px'}}>
+                    <h3 style={{marginTop:'1.5rem'}}>{is24h ? "Last 24 hours" : `Last ${overviewDays} days`}</h3>
+                    <div className="history-log-wrap"><div className="history-log" ref={logRef} style={{maxHeight:'500px'}}>
                       {displayList.map(e => (
                         <div className="log-entry" key={e.id}>
                           <span className="time" style={is24h ? {} : {minWidth:'90px'}}>{fmtTime(e.loggedAt)}</span>
@@ -861,7 +862,7 @@
               <div style={{display:'flex',gap:'2px',borderTop:'1px solid var(--border)',paddingTop:'4px',marginTop:'2px'}}>
                 {byHour.map(h => (
                   <div key={h.hour} style={{flex:1,textAlign:'center'}}>
-                    {h.hour % 3 === 0 && <span style={{fontSize:'0.6rem',color:'var(--text-muted)'}}>{h.hour}</span>}
+                    <span style={{fontSize:'0.55rem',color:'var(--text-muted)'}}>{h.hour}</span>
                   </div>
                 ))}
               </div>
