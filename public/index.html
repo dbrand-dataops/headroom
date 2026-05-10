@@ -199,7 +199,9 @@
     .item-inner { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.65rem; border-radius: 6px; border: 1px solid; min-width: 0; }
     .item-inner.filler { background: var(--bg-card); border-color: rgba(252,129,129,0.15); }
     .item-inner.emptier { background: var(--bg-card); border-color: rgba(79,209,197,0.15); }
-    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+    .item-label-bar { flex: 1; font-size: 0.9rem; color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; position: relative; cursor: pointer; }
+    .label-tooltip { position: absolute; bottom: calc(100% + 8px); left: 0; background: var(--bg-elevated); border: 1px solid var(--border-hover); border-radius: 6px; padding: 0.5rem 0.75rem; font-size: 0.85rem; color: var(--text-bright); white-space: normal; word-break: break-word; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.4); min-width: 160px; max-width: 280px; pointer-events: none; }
+    .label-tooltip::after { content: ''; position: absolute; top: 100%; left: 16px; border: 6px solid transparent; border-top-color: var(--border-hover); }
     .intensity-group { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
     .intensity-btn { width: 36px; height: 28px; border-radius: 4px; border: 1px solid; cursor: pointer; font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; transition: all 0.15s; user-select: none; display: flex; align-items: center; justify-content: center; }
     .intensity-btn:active { transform: scale(0.92); }
@@ -616,9 +618,18 @@
 
     function ItemRow({ item, type, editing, tapped, onTap, onCustomTap, onEdit, onRemove, onSetEditing }) {
       const [editLabel, setEditLabel] = useState(item.label);
+      const [showTip, setShowTip] = useState(false);
       const customRef = useRef(null);
+      const tipTimer = useRef(null);
       const isFill = type === 'filler';
       const sym = isFill ? '+' : '\u2212';
+
+      const handleLabelTap = (e) => {
+        e.stopPropagation();
+        setShowTip(true);
+        clearTimeout(tipTimer.current);
+        tipTimer.current = setTimeout(() => setShowTip(false), 2000);
+      };
 
       const doCustom = () => {
         const val = parseInt(customRef.current?.value);
@@ -639,7 +650,7 @@
       return (
         <div className={`item-row ${type}`}>
           <div className={`item-inner ${type}`}>
-            <span className="item-label-bar">{item.label}</span>
+            <span className="item-label-bar" onClick={handleLabelTap}>{item.label}{showTip && <span className="label-tooltip">{item.label}</span>}</span>
             <div className="intensity-group">
               <button className={`intensity-btn ${type} i1${tapped===item.id+'-1'?' tapped':''}`} onClick={()=>onTap(item,1)} title="Mild">{sym}</button>
               <button className={`intensity-btn ${type} i2${tapped===item.id+'-2'?' tapped':''}`} onClick={()=>onTap(item,2)} title="Moderate">{sym}{sym}</button>
@@ -725,10 +736,20 @@
               <div className="items-scroll">
               {(() => {
                 const is24h = overviewDays <= 1;
-                const entries = historyEntries;
-                const displayList = is24h ? [...historyEntries].reverse() : historyEntries;
+                // For 24h: merge todayEntries (always current) with historyEntries (rolling, may include pre-midnight)
+                let entries, displayList;
+                if (is24h) {
+                  const todayIds = new Set(todayEntries.map(e => e.id));
+                  const older = historyEntries.filter(e => !todayIds.has(e.id));
+                  const merged = [...older, ...todayEntries].sort((a, b) => new Date(a.loggedAt) - new Date(b.loggedAt));
+                  entries = merged;
+                  displayList = [...merged].reverse();
+                } else {
+                  entries = historyEntries;
+                  displayList = historyEntries;
+                }
                 const fmtTime = (ts) => { const d = new Date(ts); return is24h ? d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); };
-                if (historyLoading) return <div className="loading">Loading...</div>;
+                if (historyLoading && entries.length === 0) return <div className="loading">Loading...</div>;
                 if (entries.length === 0) return (
                   <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
                     <p style={{fontSize:'0.95rem'}}>No entries in the last {is24h ? '24 hours' : `${overviewDays} days`}.</p>
@@ -737,7 +758,7 @@
                 );
                 return (
                   <div className="history-section">
-                    <HistoryChart entries={is24h ? entries : [...entries].reverse()} />
+                    <HistoryChart entries={entries} />
                     <h3 style={{marginTop:'1.5rem'}}>{is24h ? "Last 24 hours" : `Last ${overviewDays} days`}</h3>
                     <div className="history-log-wrap"><div className="history-log" ref={logRef} style={{maxHeight:'500px'}}>
                       {displayList.map(e => (
