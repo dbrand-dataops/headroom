@@ -524,8 +524,16 @@
       const [editing, setEditing] = useState(null); // item id being edited
       const [adding, setAdding] = useState(null); // 'filler' or 'emptier'
       const [addLabel, setAddLabel] = useState('');
+      const MOBILE_MQ = window.matchMedia('(max-width: 900px)');
+      const [isMobile, setIsMobile] = useState(() => MOBILE_MQ.matches);
       const [bucketTab, setBucketTab] = useState(() => {
-        try { const t = localStorage.getItem('headroom_tab') || 'loadrelief'; return (t === 'load' || t === 'relief') ? 'loadrelief' : t; } catch(e) { return 'loadrelief'; }
+        try {
+          const stored = localStorage.getItem('headroom_tab') || 'load';
+          const mobile = MOBILE_MQ.matches;
+          if (mobile && stored === 'loadrelief') return 'load';
+          if (!mobile && (stored === 'load' || stored === 'relief')) return 'loadrelief';
+          return stored;
+        } catch(e) { return MOBILE_MQ.matches ? 'load' : 'loadrelief'; }
       });
       const [overviewDays, setOverviewDays] = useState(1);
       const [historyEntries, setHistoryEntries] = useState([]);
@@ -533,6 +541,21 @@
       const logRef = useRef(null);
 
       const switchTab = (tab) => { setBucketTab(tab); try { localStorage.setItem('headroom_tab', tab); } catch(e) {} };
+
+      // Responsive tab migration on viewport change
+      useEffect(() => {
+        const handler = (e) => {
+          const nowMobile = e.matches;
+          setIsMobile(nowMobile);
+          setBucketTab(prev => {
+            if (nowMobile && prev === 'loadrelief') return 'load';
+            if (!nowMobile && (prev === 'load' || prev === 'relief')) return 'loadrelief';
+            return prev;
+          });
+        };
+        MOBILE_MQ.addEventListener('change', handler);
+        return () => MOBILE_MQ.removeEventListener('change', handler);
+      }, []);
 
       const load = useCallback(async () => {
         try {
@@ -710,27 +733,57 @@
           </div>
           <div className="items-panel">
             <div className="bucket-tabs">
-              <button className={`bucket-tab${bucketTab==='loadrelief'?' active':''}`} onClick={()=>switchTab('loadrelief')}>Load / Relief</button>
-              <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
+              {isMobile ? <>
+                <button className={`bucket-tab${bucketTab==='load'?' active':''}`} onClick={()=>switchTab('load')}>Load</button>
+                <button className={`bucket-tab${bucketTab==='relief'?' active':''}`} onClick={()=>switchTab('relief')}>Relief</button>
+                <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
+              </> : <>
+                <button className={`bucket-tab${bucketTab==='loadrelief'?' active':''}`} onClick={()=>switchTab('loadrelief')}>Load / Relief</button>
+                <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
+              </>}
             </div>
 
-            {bucketTab === 'loadrelief' && <>
+            {bucketTab === 'load' && <>
               <div style={{marginTop:'30px',flexShrink:0}}></div>
               <div className="items-scroll">
-              {todayEntries.length === 0 && level === 0 && (
-                <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'1rem'}}>
-                  <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
-                  <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Log <strong style={{color:'var(--coral)'}}>Load</strong> items that apply right now using <strong style={{color:'var(--coral)'}}>+</strong> / <strong style={{color:'var(--coral)'}}>++</strong> / <strong style={{color:'var(--coral)'}}>+++</strong>. Then log <strong style={{color:'var(--teal)'}}>Relief</strong> actions as you do them. The space between your level and the top is your headroom.</p>
-                </div>
-              )}
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
+                {todayEntries.length === 0 && level === 0 && (
+                  <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'0.75rem'}}>
+                    <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
+                    <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Log the <strong style={{color:'var(--coral)'}}>Load</strong> items that apply right now using <strong style={{color:'var(--coral)'}}>+</strong> / <strong style={{color:'var(--coral)'}}>++</strong> / <strong style={{color:'var(--coral)'}}>+++</strong>. Then switch to Relief and log actions as you do them. The space between your level and the top is your headroom.</p>
+                  </div>
+                )}
                 <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
                   {renderGroup(fillers, 'filler')}
                 </div>
+              </div>
+            </>}
+
+            {bucketTab === 'relief' && <>
+              <div style={{marginTop:'30px',flexShrink:0}}></div>
+              <div className="items-scroll">
                 <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
                   {renderGroup(emptiers, 'emptier')}
                 </div>
               </div>
+            </>}
+
+            {bucketTab === 'loadrelief' && <>
+              <div style={{marginTop:'30px',flexShrink:0}}></div>
+              <div className="items-scroll">
+                {todayEntries.length === 0 && level === 0 && (
+                  <div style={{background:'var(--bg-card)',border:'1px solid var(--teal-dim)',borderRadius:'10px',padding:'1.25rem 1.5rem',marginBottom:'1rem'}}>
+                    <p style={{color:'var(--teal)',fontFamily:'var(--font-display)',fontWeight:600,fontSize:'1rem',marginBottom:'0.5rem'}}>How to use Headroom</p>
+                    <p style={{color:'var(--text-muted)',fontSize:'0.9rem',lineHeight:'1.6',margin:0}}>Log <strong style={{color:'var(--coral)'}}>Load</strong> items that apply right now using <strong style={{color:'var(--coral)'}}>+</strong> / <strong style={{color:'var(--coral)'}}>++</strong> / <strong style={{color:'var(--coral)'}}>+++</strong>. Then log <strong style={{color:'var(--teal)'}}>Relief</strong> actions as you do them. The space between your level and the top is your headroom.</p>
+                  </div>
+                )}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'1.5rem',alignItems:'start'}}>
+                  <div className="item-group fillers"><h3><span className="dot"></span> Load</h3>
+                    {renderGroup(fillers, 'filler')}
+                  </div>
+                  <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
+                    {renderGroup(emptiers, 'emptier')}
+                  </div>
+                </div>
               </div>
             </>}
 
@@ -743,7 +796,6 @@
               <div className="items-scroll">
               {(() => {
                 const is24h = overviewDays <= 1;
-                // For 24h: merge todayEntries (always current) with historyEntries (rolling, may include pre-midnight)
                 let entries, displayList;
                 if (is24h) {
                   const todayIds = new Set(todayEntries.map(e => e.id));
@@ -760,7 +812,7 @@
                 if (entries.length === 0) return (
                   <div style={{textAlign:'center',padding:'3rem 1rem',color:'var(--text-muted)'}}>
                     <p style={{fontSize:'0.95rem'}}>No entries in the last {is24h ? '24 hours' : `${overviewDays} days`}.</p>
-                    <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab('loadrelief')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Load / Relief</button> to start logging.</p>
+                    <p style={{fontSize:'0.85rem',marginTop:'0.5rem'}}>Switch to <button onClick={()=>switchTab(isMobile?'load':'loadrelief')} style={{background:'none',border:'none',color:'var(--teal)',cursor:'pointer',fontFamily:'var(--font-body)',fontSize:'0.85rem',textDecoration:'underline'}}>Load</button> to start logging.</p>
                   </div>
                 );
                 return (
