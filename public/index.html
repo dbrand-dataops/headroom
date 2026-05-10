@@ -703,7 +703,7 @@
               <button className={`bucket-tab${bucketTab==='overview'?' active':''}`} onClick={()=>switchTab('overview')}>Overview</button>
             </div>
 
-            {bucketTab === 'load' && (
+            {bucketTab === 'load' && <>
               <div style={{marginTop:'30px',display:'flex',gap:'0.5rem',marginBottom:'12px',flexShrink:0}}></div>
               <div className="items-scroll">
               {todayEntries.length === 0 && level === 0 && (
@@ -716,16 +716,16 @@
                 {renderGroup(fillers, 'filler')}
               </div>
               </div>
-            )}
+            </>}
 
-            {bucketTab === 'relief' && (
+            {bucketTab === 'relief' && <>
               <div style={{marginTop:'30px',display:'flex',gap:'0.5rem',marginBottom:'12px',flexShrink:0}}></div>
               <div className="items-scroll">
               <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3>
                 {renderGroup(emptiers, 'emptier')}
               </div>
               </div>
-            )}
+            </>}
 
             {bucketTab === 'overview' && <>
               <div style={{marginTop:'30px',display:'flex',gap:'0.5rem',marginBottom:'12px',flexShrink:0}}>
