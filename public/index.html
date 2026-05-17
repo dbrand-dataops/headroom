@@ -75,9 +75,7 @@
     footer { padding: 2.5rem 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
     footer a { color: var(--teal); text-decoration: none; cursor: pointer; }
 
-    /* DEMO */
-    .demo-page { padding-top: 70px; min-height: 100vh; }
-    .demo-layout { max-width: 1100px; margin: 0 auto; padding: 2rem; display: grid; grid-template-columns: 300px 1fr; gap: 2.5rem; align-items: start; }
+    /* BUCKET PANEL */
     .bucket-panel { position: sticky; top: 90px; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
     .bucket-svg-wrap { transition: filter 0.5s; }
     .level-reading { font-family: var(--font-display); font-size: 2.8rem; font-weight: 600; letter-spacing: -0.03em; transition: color 0.5s; }
@@ -120,9 +118,6 @@
     .log-entry .delta { font-weight: 600; font-size: 0.85rem; font-variant-numeric: tabular-nums; min-width: 40px; text-align: right; }
     .log-entry .delta.up { color: var(--coral); } .log-entry .delta.down { color: var(--teal); }
     .log-entry .level-after { color: var(--text-muted); font-size: 0.8rem; min-width: 32px; text-align: right; }
-    .demo-banner { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
-    .demo-banner strong { color: var(--amber); font-weight: 500; }
-
     /* AUTH FORMS */
     .auth-page { padding-top: 70px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
     .auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; width: 100%; max-width: 420px; margin: 2rem; }
@@ -1234,8 +1229,7 @@
             <div className="hero-text">
               <h1>Headroom</h1><div className="strapline">know your headroom</div>
               <p>A personal psychological load management tool built on the stress-bucket model. See your current state. Understand your capacity. Make better decisions about the day ahead.</p>
-              <a className="btn-primary" onClick={()=>navigate('demo')}>Try the demo</a>
-              {' '}<a className="btn-secondary" onClick={()=>navigate('register')} style={{marginLeft:'0.75rem'}}>Create account</a>
+              <a className="btn-primary" onClick={()=>navigate('register')}>Create account</a>
             </div>
             <div className="hero-bucket"><BucketSVG level={30} size={1.2} /></div>
           </div></section>
@@ -1255,28 +1249,6 @@
             <a className="btn-primary" onClick={()=>navigate('register')}>Create account</a>
           </div></section>
         </div>
-      );
-    }
-
-    // ═══════════════════════════════════════
-    // DEMO PAGE (self-contained)
-    // ═══════════════════════════════════════
-    const DEMO_FILLERS = [{id:1,label:'Work pressure',value:12},{id:2,label:'Financial worry',value:18},{id:3,label:'Poor sleep',value:10},{id:4,label:'Family conflict',value:15},{id:5,label:'Health concern',value:11},{id:6,label:'Isolation',value:8},{id:7,label:'Rumination',value:9}];
-    const DEMO_EMPTIERS = [{id:101,label:'Exercise',value:14},{id:102,label:'Good conversation',value:11},{id:103,label:'Time outdoors',value:9},{id:104,label:'Structured task',value:8},{id:105,label:'Rest',value:10},{id:106,label:'Music / creativity',value:7},{id:107,label:'Helping someone',value:6}];
-    function buildSeedHistory(){const n=Date.now(),h=36e5,d=864e5,e=[];let l=0;const g=(o,la,de)=>{l=Math.max(0,Math.min(100,l+de));e.push({id:e.length+1,ts:new Date(n-o).toISOString(),label:la,delta:de,level:l,type:de>0?'filler':'emptier'});};g(2*d+10*h,'Work pressure',12);g(2*d+9.8*h,'Financial worry',18);g(2*d+9.5*h,'Poor sleep',10);g(2*d+9*h,'Family conflict',15);g(2*d+5*h,'Exercise',-14);g(2*d+3*h,'Structured task',-8);g(2*d+1*h,'Good conversation',-11);g(2*d+.5*h,'Rest',-10);g(d+10*h,'Financial worry',18);g(d+9.5*h,'Work pressure',12);g(d+9*h,'Rumination',9);g(d+8.5*h,'Health concern',11);g(d+5*h,'Time outdoors',-9);g(d+3*h,'Exercise',-14);g(d+h,'Music / creativity',-7);g(8*h,'Work pressure',12);g(7.5*h,'Family conflict',15);g(7*h,'Poor sleep',10);g(4*h,'Exercise',-14);g(2*h,'Good conversation',-11);return{entries:e,level:l};}
-
-    function DemoPage() {
-      const seed = useMemo(()=>buildSeedHistory(),[]);
-      const [level,setLevel]=useState(seed.level);const [entries,setEntries]=useState(seed.entries);const [tapped,setTapped]=useState(null);const logRef=useRef(null);
-      const handleItem=(item,type)=>{const delta=type==='filler'?item.value:-item.value;const nl=Math.max(0,Math.min(100,level+delta));setLevel(nl);setEntries(p=>[...p,{id:Date.now(),ts:new Date().toISOString(),label:item.label,delta,level:nl,type}]);setTapped(item.id);setTimeout(()=>setTapped(null),300);setTimeout(()=>{if(logRef.current)logRef.current.scrollTop=0;},50);};
-      const handleReset=()=>{const s=buildSeedHistory();setLevel(s.level);setEntries(s.entries);};
-      const col=levelColor(level);const fmtTime=(ts)=>{const d=new Date(ts);const diff=Math.floor((Date.now()-d)/864e5);if(diff===0)return d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});if(diff===1)return'yday';return`${diff}d`;};
-      return (
-        <div className="demo-page"><div className="demo-banner"><strong>Demo</strong> / Tap items to see the bucket respond. Data resets on reload.</div>
-        <div className="demo-layout"><div className="bucket-panel"><BucketSVG level={level} size={1.1} /><div style={{textAlign:'center'}}><div className="level-reading" style={{color:col.main}}>{Math.round(level)}%</div><div className="level-label">{levelWord(level)}</div><div className="headroom-reading">{100-Math.round(level)}% headroom</div></div><button className="reset-btn" onClick={handleReset}>Reset demo</button></div>
-        <div className="items-panel"><div className="item-group fillers"><h3><span className="dot"></span> Load</h3><div className="items-grid">{DEMO_FILLERS.map(i=><button key={i.id} className={`item-btn filler${tapped===i.id?' tapped':''}`} onClick={()=>handleItem(i,'filler')}>{i.label}<span className="impact">+{i.value}</span></button>)}</div></div>
-        <div className="item-group emptiers"><h3><span className="dot"></span> Relief</h3><div className="items-grid">{DEMO_EMPTIERS.map(i=><button key={i.id} className={`item-btn emptier${tapped===i.id?' tapped':''}`} onClick={()=>handleItem(i,'emptier')}>{i.label}<span className="impact">-{i.value}</span></button>)}</div></div>
-        <div className="history-section"><h3>History</h3><HistoryChart entries={entries} /><div className="history-log-wrap"><div className="history-log" ref={logRef}>{entries.slice().reverse().map(e=><div className="log-entry" key={e.id}><span className="time">{fmtTime(e.ts)}</span><span className="label">{e.label}</span><span className={`delta ${e.delta>0?'up':'down'}`}>{e.delta>0?'+':''}{e.delta}</span><span className="level-after">{Math.round(e.level)}%</span></div>)}</div></div></div></div></div></div>
       );
     }
 
@@ -1351,7 +1323,6 @@
         <nav>
           <a className="logo" onClick={()=>navigate('home')}>headroom</a>
           <ul className="nav-links">
-            <li>{navLink('demo', 'Demo')}</li>
             <li>{navLink('why', 'Why it works')}</li>
             <li>{navLink('contact', 'Contact')}</li>
             {user ? <li><a className="nav-user" onClick={()=>navigate('app')}>{user.displayName || 'My bucket'}</a></li>
@@ -1360,9 +1331,8 @@
         </nav>
         {route === 'login' && <LoginPage navigate={navigate} onAuth={onAuth} />}
         {route === 'register' && <RegisterPage navigate={navigate} onAuth={onAuth} />}
-        {route === 'demo' && <DemoPage />}
         {(route === 'home' || route === '') && <LandingPage navigate={navigate} />}
-        {!['login','register','demo','home',''].includes(route) && <div className="page" style={{paddingTop:'100px',textAlign:'center'}}><h1 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)'}}>Coming soon</h1><p style={{color:'var(--text-muted)',marginTop:'1rem'}}>This page is being built.</p></div>}
+        {!['login','register','home',''].includes(route) && <div className="page" style={{paddingTop:'100px',textAlign:'center'}}><h1 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)'}}>Coming soon</h1><p style={{color:'var(--text-muted)',marginTop:'1rem'}}>This page is being built.</p></div>}
         <footer><p>&copy; 2026 Headroom. Built in Nottingham. <a onClick={()=>navigate('contact')}>Contact</a></p></footer>
       </>);
     }

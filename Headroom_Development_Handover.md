@@ -280,6 +280,11 @@ cd ~/Documents/wip/coding/headroom
 git add -A && git commit -m "description" && git push
 ```
 
+Files downloaded from Claude go to ~/Downloads/. Copy them into the repo manually before committing:
+```bash
+cp ~/Downloads/filename.js routes/filename.js  # or wherever it belongs
+```
+
 When providing multiple files that share a name but go in different directories (e.g. middleware/auth.js and routes/auth.js), name the downloads distinctly (e.g. middleware-auth.js and routes-auth.js) to avoid overwrite confusion.
 
 
