@@ -414,7 +414,58 @@
             <div className="form-group"><label>Password</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} required /></div>
             <button type="submit" className="btn-primary form-submit" disabled={loading}>{loading ? 'Logging in...' : 'Log in'}</button>
           </form>
-          <div className="form-footer"><a onClick={()=>navigate('register')}>Create an account</a></div>
+          <div className="form-footer">
+            <a onClick={()=>navigate('register')}>Create an account</a>
+            {' · '}
+            <a onClick={()=>navigate('forgot-password')}>Forgot password?</a>
+          </div>
+        </div></div>
+      );
+    }
+
+    // ═══════════════════════════════════════
+    // FORGOT PASSWORD PAGE
+    // ═══════════════════════════════════════
+    function ForgotPasswordPage({ navigate }) {
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [done, setDone] = useState(false);
+      const [error, setError] = useState('');
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(''); setLoading(true);
+        try {
+          await api('/auth/reset-password-direct', { method: 'POST', body: { email, newPassword: password } });
+          setDone(true);
+        } catch (err) { setError(err.message); }
+        setLoading(false);
+      };
+
+      return (
+        <div className="auth-page"><div className="auth-card">
+          <h1>Reset password</h1>
+          <p className="subtitle">Enter your email and choose a new password.</p>
+          {error && <div className="alert alert-error">{error}</div>}
+          {done ? (
+            <div className="alert alert-success">
+              Done. <a onClick={()=>navigate('login')} style={{color:'var(--teal)',cursor:'pointer'}}>Log in with your new password.</a>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group"><label>Email</label>
+                <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required autoFocus />
+              </div>
+              <div className="form-group"><label>New password (8+ characters)</label>
+                <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={8} />
+              </div>
+              <button type="submit" className="btn-primary form-submit" disabled={loading}>
+                {loading ? 'Updating...' : 'Set new password'}
+              </button>
+            </form>
+          )}
+          <div className="form-footer"><a onClick={()=>navigate('login')}>Back to log in</a></div>
         </div></div>
       );
     }
@@ -522,6 +573,7 @@
         </div></div>
       );
     }
+
 
     // ═══════════════════════════════════════
     // APP BUCKET VIEW (main daily screen)
@@ -1566,9 +1618,10 @@ Yoo, S.-S., Gujar, N., Hu, P., Jolesz, F. A., & Walker, M. P. (2007). The human 
         </nav>
         {route === 'login' && <LoginPage navigate={navigate} onAuth={onAuth} />}
         {route === 'register' && <RegisterPage navigate={navigate} onAuth={onAuth} />}
+        {route === 'forgot-password' && <ForgotPasswordPage navigate={navigate} />}
         {(route === 'home' || route === '') && <LandingPage navigate={navigate} />}
         {route === 'why' && <WhyItWorksPage navigate={navigate} />}
-        {!['login','register','home','','why'].includes(route) && <div className="page" style={{paddingTop:'100px',textAlign:'center'}}><h1 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)'}}>Coming soon</h1><p style={{color:'var(--text-muted)',marginTop:'1rem'}}>This page is being built.</p></div>}
+        {!['login','register','forgot-password','home','','why'].includes(route) && <div className="page" style={{paddingTop:'100px',textAlign:'center'}}><h1 style={{fontFamily:'var(--font-display)',color:'var(--text-bright)'}}>Coming soon</h1><p style={{color:'var(--text-muted)',marginTop:'1rem'}}>This page is being built.</p></div>}
         <footer><p>&copy; 2026 Headroom. Built in Nottingham. <a onClick={()=>navigate('contact')}>Contact</a></p></footer>
       </>);
     }

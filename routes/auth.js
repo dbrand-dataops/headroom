@@ -303,5 +303,30 @@ async function cleanExpiredSessions() {
 // Run cleanup every hour
 setInterval(cleanExpiredSessions, 60 * 60 * 1000);
 
+// ── POST /api/auth/reset-password-direct ──
+// Temporary: no token, no email verification. Replace with email flow later.
+router.post('/reset-password-direct', authLimiter, async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ error: 'Email and new password are required.' });
+    }
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    const user = await queryOne('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
+    if (!user) {
+      // Don't reveal whether email exists, just silently succeed
+      return res.json({ ok: true });
+    }
+    const hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [hash, user.id]);
+    await query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Direct reset error:', err.message);
+    return res.status(500).json({ error: 'Reset failed. Please try again.' });
+  }
+});
 
 module.exports = router;
