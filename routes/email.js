@@ -1,11 +1,15 @@
 const { Resend } = require('resend');
 
 async function sendPasswordResetEmail(email, resetToken) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  
   try {
+    const apiKey = process.env.RESEND_API_KEY;
+    console.log('🔑 API Key exists:', !!apiKey);
+    console.log('🔑 API Key starts with re_:', apiKey?.startsWith('re_'));
+    
+    const resend = new Resend(apiKey);
     console.log('📧 Sending reset email to:', email);
-    await resend.emails.send({
+    
+    const result = await resend.emails.send({
       from: 'onboarding@resend.dev',
       to: email,
       subject: 'Reset your Headroom password',
@@ -18,9 +22,11 @@ async function sendPasswordResetEmail(email, resetToken) {
         <p>Best,<br>Headroom</p>
       `,
     });
-    console.log('✅ Email sent successfully to:', email);
+    
+    console.log('✅ Email result:', result);
   } catch (err) {
     console.error('❌ Email send failed:', err.message);
+    console.error('❌ Error details:', err);
     throw err;
   }
 }
