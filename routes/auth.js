@@ -5,7 +5,7 @@ const router = express.Router();
 const { query, queryOne, transaction } = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rate-limit');
-const { sendPasswordResetEmail } = require('../email');
+const { sendPasswordResetEmail } = require('./email');
 
 const BCRYPT_ROUNDS = 12;
 const SESSION_DAYS = 30;
