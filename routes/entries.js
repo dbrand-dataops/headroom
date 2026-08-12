@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
 
     // Verify item belongs to user and is active
     const item = await queryOne(
-      'SELECT id, type, default_value FROM items WHERE id = $1 AND user_id = $2 AND active = TRUE',
+      'SELECT id, label, type, default_value FROM items WHERE id = $1 AND user_id = $2 AND active = TRUE',
       [itemId, req.user.id]
     );
     if (!item) {
@@ -52,7 +52,8 @@ router.post('/', async (req, res) => {
       entry: {
         id: entry.id,
         itemId: entry.item_id,
-        label: item.type,
+        label: item.label,
+        type: item.type,
         value: delta,
         levelAfter: entry.level_after,
         loggedAt: entry.logged_at,

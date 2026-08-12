@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const router = express.Router();
 const { query, queryOne, transaction } = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, getSessionToken } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rate-limit');
 const { sendPasswordResetEmail } = require('./email');
 
@@ -234,11 +234,11 @@ router.post('/login', authLimiter, async (req, res) => {
 
 // ── POST /api/auth/logout ──
 router.post('/logout', async (req, res) => {
-  const token = req.cookies.session;
+  const { token, isBearer } = getSessionToken(req);
 
   if (token) {
     await query('DELETE FROM sessions WHERE token = $1', [token]).catch(() => {});
-    res.clearCookie('session', { path: '/' });
+    if (!isBearer) res.clearCookie('session', { path: '/' });
   }
 
   return res.json({ ok: true });
@@ -276,7 +276,7 @@ router.put('/password', requireAuth, async (req, res) => {
     await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newHash, req.user.id]);
 
     // Invalidate all other sessions
-    const currentToken = req.cookies.session;
+    const { token: currentToken } = getSessionToken(req);
     await query('DELETE FROM sessions WHERE user_id = $1 AND token != $2', [req.user.id, currentToken]);
 
     return res.json({ ok: true });

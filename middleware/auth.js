@@ -1,18 +1,25 @@
 const { queryOne, query } = require('../db');
 
-async function requireAuth(req, res, next) {
-  // Try session cookie first
-  let token = req.cookies.session;
-  let isBearer = false;
+// Extract the session token from a request: cookie first, then the
+// Authorization: Bearer header (for mobile/API clients).
+function getSessionToken(req) {
+  const cookieToken = req.cookies.session;
+  if (cookieToken) {
+    return { token: cookieToken, isBearer: false };
+  }
 
-  // If no cookie, try Authorization header (for mobile/API clients)
-  if (!token && req.headers.authorization) {
+  if (req.headers.authorization) {
     const parts = req.headers.authorization.split(' ');
     if (parts.length === 2 && parts[0] === 'Bearer') {
-      token = parts[1];
-      isBearer = true;
+      return { token: parts[1], isBearer: true };
     }
   }
+
+  return { token: null, isBearer: false };
+}
+
+async function requireAuth(req, res, next) {
+  const { token, isBearer } = getSessionToken(req);
 
   if (!token) {
     return res.status(401).json({ error: 'Not authenticated' });
@@ -91,4 +98,4 @@ async function optionalAuth(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth, optionalAuth };
+module.exports = { requireAuth, optionalAuth, getSessionToken };
