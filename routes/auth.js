@@ -5,6 +5,7 @@ const router = express.Router();
 const { query, queryOne, transaction } = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rate-limit');
+const { sendPasswordResetEmail } = require('../email');
 
 const BCRYPT_ROUNDS = 12;
 const SESSION_DAYS = 30;
@@ -114,38 +115,43 @@ router.post('/register', authLimiter, async (req, res) => {
       return { user, token };
     });
 
-// Check if mobile client
-if (req.headers['x-client'] === 'mobile') {
-  // Return token in JSON body for mobile clients (they'll store it in secure storage)
-  return res.status(201).json({
-    user: {
-      id: result.user.id,
-      email: result.user.email,
-      displayName: result.user.display_name,
-      tier: result.user.tier,
-      earlyAdopter: result.user.early_adopter,
-      isAdmin: result.user.is_admin,
-      timezone: result.user.timezone,
-      onboarded: !!result.user.onboarded_at,
-    },
-    token: result.token,  // Mobile client will store this in secure storage
-  });
-}
+    // Check if mobile client
+    if (req.headers['x-client'] === 'mobile') {
+      // Return token in JSON body for mobile clients (they'll store it in secure storage)
+      return res.status(201).json({
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          displayName: result.user.display_name,
+          tier: result.user.tier,
+          earlyAdopter: result.user.early_adopter,
+          isAdmin: result.user.is_admin,
+          timezone: result.user.timezone,
+          onboarded: !!result.user.onboarded_at,
+        },
+        token: result.token,  // Mobile client will store this in secure storage
+      });
+    }
 
-// For web clients, use cookie-based auth
-setSessionCookie(res, result.token);
+    // For web clients, use cookie-based auth
+    setSessionCookie(res, result.token);
 
-return res.status(201).json({
-  user: {
-    id: result.user.id,
-    email: result.user.email,
-    displayName: result.user.display_name,
-    tier: result.user.tier,
-    earlyAdopter: result.user.early_adopter,
-    isAdmin: result.user.is_admin,
-    timezone: result.user.timezone,
-    onboarded: !!result.user.onboarded_at,
-  },
+    return res.status(201).json({
+      user: {
+        id: result.user.id,
+        email: result.user.email,
+        displayName: result.user.display_name,
+        tier: result.user.tier,
+        earlyAdopter: result.user.early_adopter,
+        isAdmin: result.user.is_admin,
+        timezone: result.user.timezone,
+        onboarded: !!result.user.onboarded_at,
+      },
+    });
+  } catch (err) {
+    console.error('Registration error:', err.message);
+    return res.status(500).json({ error: 'Registration failed. Please try again.' });
+  }
 });
 
 
@@ -187,37 +193,42 @@ router.post('/login', authLimiter, async (req, res) => {
     // Update last active
     await query('UPDATE users SET last_active_at = NOW() WHERE id = $1', [user.id]);
 
-// Check if mobile client
-if (req.headers['x-client'] === 'mobile') {
-  return res.json({
-    user: {
-      id: user.id,
-      email: user.email,
-      displayName: user.display_name,
-      tier: user.tier,
-      earlyAdopter: user.early_adopter,
-      isAdmin: user.is_admin,
-      timezone: user.timezone,
-      onboarded: !!user.onboarded_at,
-    },
-    token: token,
-  });
-}
+    // Check if mobile client
+    if (req.headers['x-client'] === 'mobile') {
+      return res.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.display_name,
+          tier: user.tier,
+          earlyAdopter: user.early_adopter,
+          isAdmin: user.is_admin,
+          timezone: user.timezone,
+          onboarded: !!user.onboarded_at,
+        },
+        token: token,
+      });
+    }
 
-// For web clients, use cookie-based auth
-setSessionCookie(res, token);
+    // For web clients, use cookie-based auth
+    setSessionCookie(res, token);
 
-return res.json({
-  user: {
-    id: user.id,
-    email: user.email,
-    displayName: user.display_name,
-    tier: user.tier,
-    earlyAdopter: user.early_adopter,
-    isAdmin: user.is_admin,
-    timezone: user.timezone,
-    onboarded: !!user.onboarded_at,
-  },
+    return res.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.display_name,
+        tier: user.tier,
+        earlyAdopter: user.early_adopter,
+        isAdmin: user.is_admin,
+        timezone: user.timezone,
+        onboarded: !!user.onboarded_at,
+      },
+    });
+  } catch (err) {
+    console.error('Login error:', err.message);
+    return res.status(500).json({ error: 'Login failed. Please try again.' });
+  }
 });
 
 
@@ -330,8 +341,6 @@ async function cleanExpiredSessions() {
 // Run cleanup every hour
 setInterval(cleanExpiredSessions, 60 * 60 * 1000);
 
-const crypto = require('crypto');
-const { sendPasswordResetEmail } = require('../email');
 
 // ── POST /api/auth/forgot-password ──
 router.post('/forgot-password', authLimiter, async (req, res) => {
