@@ -10,7 +10,7 @@ async function sendPasswordResetEmail(email, resetToken) {
     console.log('📧 Sending reset email to:', email);
     
     const result = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: 'noreply@headroom.me.uk',  // Instead of onboarding@resend.dev
       to: email,
       subject: 'Reset your Headroom password',
       html: `
@@ -32,3 +32,5 @@ async function sendPasswordResetEmail(email, resetToken) {
 }
 
 module.exports = { sendPasswordResetEmail };
+
+
