@@ -114,24 +114,38 @@ router.post('/register', authLimiter, async (req, res) => {
       return { user, token };
     });
 
-    setSessionCookie(res, result.token);
+// Check if mobile client
+if (req.headers['x-client'] === 'mobile') {
+  // Return token in JSON body for mobile clients (they'll store it in secure storage)
+  return res.status(201).json({
+    user: {
+      id: result.user.id,
+      email: result.user.email,
+      displayName: result.user.display_name,
+      tier: result.user.tier,
+      earlyAdopter: result.user.early_adopter,
+      isAdmin: result.user.is_admin,
+      timezone: result.user.timezone,
+      onboarded: !!result.user.onboarded_at,
+    },
+    token: result.token,  // Mobile client will store this in secure storage
+  });
+}
 
-    return res.status(201).json({
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        displayName: result.user.display_name,
-        tier: result.user.tier,
-        earlyAdopter: result.user.early_adopter,
-        isAdmin: result.user.is_admin,
-        timezone: result.user.timezone,
-        onboarded: !!result.user.onboarded_at,
-      },
-    });
-  } catch (err) {
-    console.error('Registration error:', err.message);
-    return res.status(500).json({ error: 'Registration failed. Please try again.' });
-  }
+// For web clients, use cookie-based auth
+setSessionCookie(res, result.token);
+
+return res.status(201).json({
+  user: {
+    id: result.user.id,
+    email: result.user.email,
+    displayName: result.user.display_name,
+    tier: result.user.tier,
+    earlyAdopter: result.user.early_adopter,
+    isAdmin: result.user.is_admin,
+    timezone: result.user.timezone,
+    onboarded: !!result.user.onboarded_at,
+  },
 });
 
 
@@ -173,24 +187,37 @@ router.post('/login', authLimiter, async (req, res) => {
     // Update last active
     await query('UPDATE users SET last_active_at = NOW() WHERE id = $1', [user.id]);
 
-    setSessionCookie(res, token);
+// Check if mobile client
+if (req.headers['x-client'] === 'mobile') {
+  return res.json({
+    user: {
+      id: user.id,
+      email: user.email,
+      displayName: user.display_name,
+      tier: user.tier,
+      earlyAdopter: user.early_adopter,
+      isAdmin: user.is_admin,
+      timezone: user.timezone,
+      onboarded: !!user.onboarded_at,
+    },
+    token: token,
+  });
+}
 
-    return res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        displayName: user.display_name,
-        tier: user.tier,
-        earlyAdopter: user.early_adopter,
-        isAdmin: user.is_admin,
-        timezone: user.timezone,
-        onboarded: !!user.onboarded_at,
-      },
-    });
-  } catch (err) {
-    console.error('Login error:', err.message);
-    return res.status(500).json({ error: 'Login failed. Please try again.' });
-  }
+// For web clients, use cookie-based auth
+setSessionCookie(res, token);
+
+return res.json({
+  user: {
+    id: user.id,
+    email: user.email,
+    displayName: user.display_name,
+    tier: user.tier,
+    earlyAdopter: user.early_adopter,
+    isAdmin: user.is_admin,
+    timezone: user.timezone,
+    onboarded: !!user.onboarded_at,
+  },
 });
 
 
@@ -303,28 +330,97 @@ async function cleanExpiredSessions() {
 // Run cleanup every hour
 setInterval(cleanExpiredSessions, 60 * 60 * 1000);
 
-// ── POST /api/auth/reset-password-direct ──
-// Temporary: no token, no email verification. Replace with email flow later.
-router.post('/reset-password-direct', authLimiter, async (req, res) => {
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('../email');
+
+// ── POST /api/auth/forgot-password ──
+router.post('/forgot-password', authLimiter, async (req, res) => {
   try {
-    const { email, newPassword } = req.body;
-    if (!email || !newPassword) {
-      return res.status(400).json({ error: 'Email and new password are required.' });
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    const normEmail = email.trim().toLowerCase();
+    const user = await queryOne('SELECT id FROM users WHERE email = $1', [normEmail]);
+
+    // Always respond ok, even if email doesn't exist (security best practice)
+    if (!user) {
+      return res.json({ ok: true });
+    }
+
+    // Generate token (raw token sent to user, hash stored in DB)
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store token hash in DB
+    await query(
+      `INSERT INTO password_resets (user_id, token_hash, expires_at)
+       VALUES ($1, $2, $3)`,
+      [user.id, tokenHash, expiresAt]
+    );
+
+    // Send email (fire and forget, errors logged but don't fail the request)
+    sendPasswordResetEmail(normEmail, token).catch(err => {
+      console.error('Failed to send reset email:', err.message);
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error('Forgot password error:', err.message);
+    return res.status(500).json({ error: 'Request failed. Please try again.' });
+  }
+});
+
+// ── POST /api/auth/reset-password ──
+router.post('/reset-password', authLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required.' });
     }
     if (!isValidPassword(newPassword)) {
       return res.status(400).json({ error: 'Password must be at least 8 characters.' });
     }
-    const user = await queryOne('SELECT id FROM users WHERE email = $1', [email.trim().toLowerCase()]);
-    if (!user) {
-      // Don't reveal whether email exists, just silently succeed
-      return res.json({ ok: true });
+
+    // Hash the provided token and look it up
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const resetRecord = await queryOne(
+      `SELECT user_id FROM password_resets
+       WHERE token_hash = $1 AND expires_at > NOW() AND used_at IS NULL`,
+      [tokenHash]
+    );
+
+    if (!resetRecord) {
+      // Token invalid, expired, or already used
+      return res.status(400).json({ error: 'Invalid or expired reset link.' });
     }
-    const hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-    await query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [hash, user.id]);
-    await query('DELETE FROM sessions WHERE user_id = $1', [user.id]);
+
+    // Hash new password and update user
+    const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+
+    await transaction(async (client) => {
+      // Update password
+      await client.query(
+        'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+        [newHash, resetRecord.user_id]
+      );
+
+      // Mark token as used (don't delete, keep the audit trail)
+      await client.query(
+        'UPDATE password_resets SET used_at = NOW() WHERE token_hash = $1',
+        [tokenHash]
+      );
+
+      // Invalidate all sessions for this user
+      await client.query('DELETE FROM sessions WHERE user_id = $1', [resetRecord.user_id]);
+    });
+
     return res.json({ ok: true });
   } catch (err) {
-    console.error('Direct reset error:', err.message);
+    console.error('Reset password error:', err.message);
     return res.status(500).json({ error: 'Reset failed. Please try again.' });
   }
 });

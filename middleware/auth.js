@@ -1,8 +1,18 @@
 const { queryOne, query } = require('../db');
 
-// Authenticate request via session cookie
 async function requireAuth(req, res, next) {
-  const token = req.cookies.session;
+  // Try session cookie first
+  let token = req.cookies.session;
+  let isBearer = false;
+
+  // If no cookie, try Authorization header (for mobile/API clients)
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      token = parts[1];
+      isBearer = true;
+    }
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Not authenticated' });
@@ -19,11 +29,10 @@ async function requireAuth(req, res, next) {
     );
 
     if (!session) {
-      res.clearCookie('session');
+      if (!isBearer) res.clearCookie('session'); // Only clear cookie if it was cookie-based auth
       return res.status(401).json({ error: 'Session expired' });
     }
 
-    // Attach user to request
     req.user = {
       id: session.user_id,
       email: session.email,
@@ -35,7 +44,7 @@ async function requireAuth(req, res, next) {
       onboarded: !!session.onboarded_at,
     };
 
-    // Update last_active_at (fire and forget, no await)
+    // Update last_active_at
     query(
       'UPDATE users SET last_active_at = NOW() WHERE id = $1',
       [session.user_id]

@@ -15,6 +15,7 @@
     "cookie-parser": "^1.4.6",
     "express": "^4.21.0",
     "express-rate-limit": "^7.4.0",
-    "pg": "^8.13.0"
+    "pg": "^8.13.0",
+    "resend": "^6.19.0"
   }
 }
